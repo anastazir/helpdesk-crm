@@ -14,7 +14,7 @@ const config: Config = {
         },
         sidebar: '#0F172A',
         canvas: '#F8FAFC',
-        border: '#E2E8F0',
+        border: 'hsl(var(--border))',
         status: {
           open: { bg: '#F1F5F9', text: '#475569' },
           assigned: { bg: '#DBEAFE', text: '#1D4ED8' },
