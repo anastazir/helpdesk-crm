@@ -7,10 +7,10 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#2563EB',
-          hover: '#1D4ED8',
-          active: '#1E40AF',
-          foreground: '#FFFFFF',
+          DEFAULT: 'hsl(var(--primary))',
+          hover: 'hsl(var(--primary-hover))',
+          active: 'hsl(var(--primary-active))',
+          foreground: 'hsl(var(--primary-foreground))',
         },
         sidebar: '#0F172A',
         canvas: '#F8FAFC',
@@ -61,7 +61,11 @@ const config: Config = {
         },
       },
       fontFamily: {
-        inter: ['Inter', 'sans-serif'],
+        inter: ['Inter', 'Noto Sans Devanagari', 'sans-serif'],
+        poppins: ['Poppins', 'Noto Sans Devanagari', 'sans-serif'],
+        roboto: ['Roboto', 'Noto Sans Devanagari', 'sans-serif'],
+        lato: ['Lato', 'Noto Sans Devanagari', 'sans-serif'],
+        merriweather: ['Merriweather', 'Noto Sans Devanagari', 'serif'],
         'noto-devanagari': ['Noto Sans Devanagari', 'sans-serif'],
       },
       borderRadius: {

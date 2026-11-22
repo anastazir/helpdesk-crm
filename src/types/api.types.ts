@@ -1,8 +1,14 @@
+export type ApiErrorDetails =
+  | string
+  | string[]
+  | Record<string, unknown>
+  | null
+
 export interface ApiResponse<T = unknown> {
   success: boolean
   message: string
   data: T | null
-  errors: Record<string, string[]> | string | null
+  errors: ApiErrorDetails
 }
 
 export interface PaginatedData<T> {

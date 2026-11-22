@@ -1,28 +1,46 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle2, Clock, Inbox, Layers } from 'lucide-react'
+import { format, subDays } from 'date-fns'
+import {
+  Archive,
+  CheckCircle2,
+  Clock,
+  Inbox,
+  Layers,
+  Package,
+  RefreshCw,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { complaintsApi } from '@/api/complaints.api'
+import { usersApi } from '@/api/users.api'
 import { zonesApi } from '@/api/zones.api'
+import AgingBuckets from '@/components/dashboard/AgingBuckets'
+import EngineerWorkload from '@/components/dashboard/EngineerWorkload'
+import IssueHotspots from '@/components/dashboard/IssueHotspots'
+import StatusDonut from '@/components/dashboard/StatusDonut'
+import TrendChart, { type TrendPoint } from '@/components/dashboard/TrendChart'
+import ZonePerformance from '@/components/dashboard/ZonePerformance'
 import ComplaintTable from '@/components/complaints/ComplaintTable'
 import SLATimer from '@/components/complaints/SLATimer'
+import StatusBadge from '@/components/complaints/StatusBadge'
 import ErrorBanner from '@/components/common/ErrorBanner'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import PageHeader from '@/components/common/PageHeader'
 import StatCard from '@/components/common/StatCard'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import UserAvatar from '@/components/common/UserAvatar'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/hooks/useAuth'
-import type { ComplaintListItem } from '@/types/complaint.types'
+import type { EngineerUser } from '@/types/auth.types'
+import type {
+  ComplaintListItem,
+  ComplaintStatus,
+} from '@/types/complaint.types'
 import type { Zone } from '@/types/zone.types'
-import { SLA_OVERDUE_SECONDS } from '@/utils/constants'
+import { SLA_OVERDUE_SECONDS, STATUS_ORDER } from '@/utils/constants'
 import { getErrorMessage } from '@/utils/errors'
-import { formatDateOnly } from '@/utils/formatters'
+import { formatDuration } from '@/utils/formatters'
 import { logger } from '@/utils/logger'
 
 interface TeamActivityEntry {
@@ -32,76 +50,45 @@ interface TeamActivityEntry {
 }
 
 const DashboardPage = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { user } = useAuth()
-  const [recent, setRecent] = useState<ComplaintListItem[]>([])
+  const [complaints, setComplaints] = useState<ComplaintListItem[]>([])
+  const [totalCount, setTotalCount] = useState(0)
   const [zones, setZones] = useState<Zone[]>([])
-  const [slaComplaints, setSlaComplaints] = useState<ComplaintListItem[]>([])
+  const [engineers, setEngineers] = useState<EngineerUser[]>([])
+  const [closedToday, setClosedToday] = useState(0)
   const [teamActivity, setTeamActivity] = useState<TeamActivityEntry[]>([])
-  const [totals, setTotals] = useState({
-    total: 0,
-    open: 0,
-    inProgress: 0,
-    closedToday: 0,
-  })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const loadDashboard = async () => {
     setLoading(true)
     setError(null)
-    logger.info('[DASHBOARD] Loading dashboard data.')
+    logger.info('[DASHBOARD] Loading dashboard analytics.')
 
     try {
-      const today = formatDateOnly(new Date().toISOString())
-      const todayForApi = new Date().toISOString().slice(0, 10)
+      const [complaintsResponse, zonesResponse, engineersResponse] =
+        await Promise.all([
+          complaintsApi.list({ page_size: 100, ordering: 'created_at' }),
+          zonesApi.list(),
+          usersApi.engineers(),
+        ])
 
-      const [
-        recentResponse,
-        totalResponse,
-        openResponse,
-        progressResponse,
-        zonesResponse,
-        slaResponse,
-      ] = await Promise.all([
-        complaintsApi.list({ page_size: 5, ordering: 'created_at' }),
-        complaintsApi.list({ page_size: 1 }),
-        complaintsApi.list({ status: 'open', page_size: 1 }),
-        complaintsApi.list({ status: 'in_progress', page_size: 1 }),
-        zonesApi.list(),
-        complaintsApi.list({ page_size: 100, ordering: 'created_at' }),
-      ])
-
-      setRecent(recentResponse.data?.results ?? [])
+      const items = complaintsResponse.data?.results ?? []
+      setComplaints(items)
+      setTotalCount(complaintsResponse.data?.count ?? items.length)
       setZones(zonesResponse.data ?? [])
-      setTotals({
-        total: totalResponse.data?.count ?? 0,
-        open: openResponse.data?.count ?? 0,
-        inProgress: progressResponse.data?.count ?? 0,
-        closedToday: 0,
-      })
+      setEngineers(engineersResponse.data ?? [])
 
-      const allRecent = slaResponse.data?.results ?? []
-      setSlaComplaints(
-        allRecent
-          .filter(
-            (complaint) =>
-              complaint.status !== 'closed' &&
-              complaint.time_open_seconds > SLA_OVERDUE_SECONDS,
-          )
-          .slice(0, 5),
+      const todayKey = format(new Date(), 'yyyy-MM-dd')
+
+      const closedItems = items.filter(
+        (complaint) => complaint.status === 'closed',
       )
-
-      const closedResponse = await complaintsApi.list({
-        status: 'closed',
-        page_size: 100,
-        ordering: 'created_at',
-      })
-      const closedItems = closedResponse.data?.results ?? []
       const closedHistoryResults = await Promise.allSettled(
         closedItems.map((complaint) => complaintsApi.getHistory(complaint.id)),
       )
-      let closedToday = 0
+      let closedTodayCount = 0
       closedHistoryResults.forEach((result) => {
         if (result.status === 'fulfilled') {
           const closedEntry = (result.value.data ?? [])
@@ -112,50 +99,41 @@ const DashboardPage = () => {
                 new Date(a.changed_at).getTime()
               return timeDifference !== 0 ? timeDifference : b.id - a.id
             })[0]
-          if (closedEntry && formatDateOnly(closedEntry.changed_at) === today) {
-            closedToday += 1
+          if (
+            closedEntry &&
+            format(new Date(closedEntry.changed_at), 'yyyy-MM-dd') === todayKey
+          ) {
+            closedTodayCount += 1
           }
         } else {
           logger.error(
-            '[DASHBOARD] Failed to load status history for closed complaint.',
+            '[DASHBOARD] Failed to load history for a closed complaint.',
             result.reason,
           )
         }
       })
-      setTotals((current) => ({ ...current, closedToday }))
+      setClosedToday(closedTodayCount)
 
       if (user?.role === 'admin') {
-        const todayResponse = await complaintsApi.list({
-          date_from: todayForApi,
-          date_to: todayForApi,
-          page_size: 100,
-          ordering: 'created_at',
-        })
-        const todayItems = todayResponse.data?.results ?? []
-        const detailResults = await Promise.allSettled(
-          todayItems.map((complaint) => complaintsApi.getById(complaint.id)),
-        )
-
-        const counts = new Map<number, TeamActivityEntry>()
-        detailResults.forEach((result) => {
-          if (result.status === 'fulfilled') {
-            const creator = result.value.data?.created_by
-            if (creator && creator.role === 'helpdesk') {
-              const current = counts.get(creator.id) ?? {
-                id: creator.id,
-                name: creator.full_name,
-                count: 0,
-              }
-              current.count += 1
-              counts.set(creator.id, current)
-            }
-          } else {
-            logger.error('[DASHBOARD] Failed to load a complaint detail.', result.reason)
+        const activity = new Map<number, TeamActivityEntry>()
+        items.forEach((complaint) => {
+          if (
+            complaint.created_by?.role !== 'helpdesk' ||
+            format(new Date(complaint.created_at), 'yyyy-MM-dd') !== todayKey
+          ) {
+            return
           }
+          const current = activity.get(complaint.created_by.id) ?? {
+            id: complaint.created_by.id,
+            name: complaint.created_by.full_name,
+            count: 0,
+          }
+          current.count += 1
+          activity.set(complaint.created_by.id, current)
         })
-        setTeamActivity(
-          [...counts.values()].sort((a, b) => b.count - a.count),
-        )
+        setTeamActivity([...activity.values()].sort((a, b) => b.count - a.count))
+      } else {
+        setTeamActivity([])
       }
     } catch (loadError) {
       logger.error('[DASHBOARD] Failed to load dashboard.', loadError)
@@ -169,82 +147,202 @@ const DashboardPage = () => {
     void loadDashboard()
   }, [user?.role])
 
-  const sortedZones = [...zones].sort(
-    (a, b) => (b.complaint_count ?? 0) - (a.complaint_count ?? 0),
-  )
-  const maxZoneCount = Math.max(
-    1,
-    ...sortedZones.map((zone) => zone.complaint_count ?? 0),
+  const statusCounts = STATUS_ORDER.reduce(
+    (counts, status) => {
+      counts[status] = complaints.filter(
+        (complaint) => complaint.status === status,
+      ).length
+      return counts
+    },
+    {} as Record<ComplaintStatus, number>,
   )
 
-  if (loading && recent.length === 0 && zones.length === 0) {
+  const unresolved = complaints.filter(
+    (complaint) => complaint.status !== 'closed',
+  )
+  const averageOpenAge =
+    unresolved.length > 0
+      ? Math.round(
+          unresolved.reduce(
+            (sum, complaint) => sum + complaint.time_open_seconds,
+            0,
+          ) / unresolved.length,
+        )
+      : 0
+  const completionRate =
+    totalCount > 0
+      ? Math.round(
+          ((statusCounts.resolved + statusCounts.closed) / totalCount) * 100,
+        )
+      : 0
+  const unassignedCount = complaints.filter(
+    (complaint) => !complaint.assigned_engineer,
+  ).length
+  const awaitingParts =
+    statusCounts.parts_requested + statusCounts.parts_provided
+  const slaAlerts = complaints
+    .filter(
+      (complaint) =>
+        complaint.status !== 'closed' &&
+        complaint.time_open_seconds > SLA_OVERDUE_SECONDS,
+    )
+    .sort((a, b) => b.time_open_seconds - a.time_open_seconds)
+    .slice(0, 5)
+
+  const trendData: TrendPoint[] = Array.from({ length: 7 }, (_, index) => {
+    const day = subDays(new Date(), 6 - index)
+    const key = format(day, 'yyyy-MM-dd')
+    return {
+      label: new Intl.DateTimeFormat(i18n.language, {
+        weekday: 'short',
+      }).format(day),
+      count: complaints.filter(
+        (complaint) =>
+          format(new Date(complaint.created_at), 'yyyy-MM-dd') === key,
+      ).length,
+    }
+  })
+
+  const recentComplaints = complaints.slice(0, 5)
+
+  if (loading && complaints.length === 0) {
     return <LoadingSpinner />
   }
 
   return (
     <div>
-      <PageHeader title={t('dashboard.title')} description={t('dashboard.subtitle')} />
+      <PageHeader
+        title={t('dashboard.title')}
+        description={t('dashboard.subtitle')}
+        actions={
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void loadDashboard()}
+            disabled={loading}
+          >
+            <RefreshCw className={loading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
+            {t('common.refresh')}
+          </Button>
+        }
+      />
 
       {error && <ErrorBanner message={error} onRetry={() => void loadDashboard()} />}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           title={t('dashboard.totalComplaints')}
-          value={totals.total}
+          value={totalCount}
+          hint={t('dashboard.completionRateHint', { rate: completionRate })}
           icon={Layers}
         />
         <StatCard
           title={t('dashboard.openComplaints')}
-          value={totals.open}
+          value={statusCounts.open}
+          hint={t('dashboard.unassignedHint', { count: unassignedCount })}
           icon={Inbox}
           valueClassName="text-blue-600"
+          iconClassName="bg-blue-50 text-blue-600 dark:bg-blue-950/40"
         />
         <StatCard
           title={t('dashboard.inProgress')}
-          value={totals.inProgress}
+          value={statusCounts.in_progress}
+          hint={t('dashboard.avgOpenAgeHint', {
+            duration: formatDuration(averageOpenAge),
+          })}
           icon={Clock}
           valueClassName="text-amber-600"
+          iconClassName="bg-amber-50 text-amber-600 dark:bg-amber-950/40"
         />
         <StatCard
-          title={t('dashboard.closedToday')}
-          value={totals.closedToday}
+          title={t('dashboard.awaitingParts')}
+          value={awaitingParts}
+          icon={Package}
+          valueClassName="text-violet-600"
+          iconClassName="bg-violet-50 text-violet-600 dark:bg-violet-950/40"
+        />
+        <StatCard
+          title={t('dashboard.resolved')}
+          value={statusCounts.resolved}
           icon={CheckCircle2}
           valueClassName="text-green-600"
+          iconClassName="bg-green-50 text-green-600 dark:bg-green-950/40"
+        />
+        <StatCard
+          title={t('dashboard.closed')}
+          value={statusCounts.closed}
+          hint={t('dashboard.closedTodayHint', { count: closedToday })}
+          icon={Archive}
+          valueClassName="text-slate-700"
+          iconClassName="bg-slate-100 text-slate-600 dark:bg-slate-800"
         />
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-2">
+      <div className="mt-6 grid gap-6 xl:grid-cols-3">
         <Card className="border-border shadow-sm">
           <CardHeader>
-            <CardTitle>{t('dashboard.complaintsByZone')}</CardTitle>
+            <CardTitle>{t('dashboard.statusDistribution')}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {t('dashboard.statusDistributionSubtitle')}
+            </p>
           </CardHeader>
           <CardContent>
-            {sortedZones.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t('dashboard.noZoneData')}</p>
-            ) : (
-              <div className="space-y-3">
-                {sortedZones.map((zone) => {
-                  const count = zone.complaint_count ?? 0
-                  return (
-                    <div key={zone.id} className="space-y-1">
-                      <div className="flex items-center justify-between gap-3 text-sm">
-                        <span className="truncate font-medium">{zone.name}</span>
-                        <span className="text-muted-foreground">{count}</span>
-                      </div>
-                      <div className="h-2 overflow-hidden rounded bg-slate-100 dark:bg-slate-800">
-                        <div
-                          className="h-full rounded bg-primary"
-                          style={{ width: `${(count / maxZoneCount) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
+            <StatusDonut counts={statusCounts} />
           </CardContent>
         </Card>
 
+        <Card className="border-border shadow-sm xl:col-span-2">
+          <CardHeader>
+            <CardTitle>{t('dashboard.intakeTrend')}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {t('dashboard.intakeTrendSubtitle')}
+            </p>
+          </CardHeader>
+          <CardContent>
+            <TrendChart data={trendData} />
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-6 grid gap-6 xl:grid-cols-3">
+        <Card className="border-border shadow-sm">
+          <CardHeader>
+            <CardTitle>{t('dashboard.aging')}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {t('dashboard.agingSubtitle')}
+            </p>
+          </CardHeader>
+          <CardContent>
+            <AgingBuckets complaints={complaints} />
+          </CardContent>
+        </Card>
+
+        <Card className="border-border shadow-sm">
+          <CardHeader>
+            <CardTitle>{t('dashboard.engineerWorkload')}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {t('dashboard.engineerWorkloadSubtitle')}
+            </p>
+          </CardHeader>
+          <CardContent>
+            <EngineerWorkload engineers={engineers} />
+          </CardContent>
+        </Card>
+
+        <Card className="border-border shadow-sm">
+          <CardHeader>
+            <CardTitle>{t('dashboard.issueHotspots')}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {t('dashboard.issueHotspotsSubtitle')}
+            </p>
+          </CardHeader>
+          <CardContent>
+            <IssueHotspots complaints={complaints} />
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-6 grid gap-6 xl:grid-cols-2">
         <Card className="border-border shadow-sm">
           <CardHeader>
             <CardTitle>{t('dashboard.slaAlerts')}</CardTitle>
@@ -253,22 +351,27 @@ const DashboardPage = () => {
             </p>
           </CardHeader>
           <CardContent>
-            {slaComplaints.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t('dashboard.noSlaAlerts')}</p>
+            {slaAlerts.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {t('dashboard.noSlaAlerts')}
+              </p>
             ) : (
               <div className="divide-y divide-border">
-                {slaComplaints.map((complaint) => (
+                {slaAlerts.map((complaint) => (
                   <div
                     key={complaint.id}
                     className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
                   >
                     <div className="min-w-0">
-                      <Link
-                        to={`/complaints/${complaint.id}`}
-                        className="font-semibold text-primary hover:underline"
-                      >
-                        #{complaint.id}
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={`/complaints/${complaint.id}`}
+                          className="font-semibold text-primary hover:underline"
+                        >
+                          #{complaint.id}
+                        </Link>
+                        <StatusBadge status={complaint.status} />
+                      </div>
                       <p className="truncate text-xs text-muted-foreground">
                         {complaint.zone?.name ?? t('complaint.notRecorded')}
                       </p>
@@ -280,16 +383,37 @@ const DashboardPage = () => {
             )}
           </CardContent>
         </Card>
+
+        <Card className="border-border shadow-sm">
+          <CardHeader>
+            <CardTitle>{t('dashboard.zonePerformance')}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {t('dashboard.zonePerformanceSubtitle')}
+            </p>
+          </CardHeader>
+          <CardContent>
+            <ZonePerformance zones={zones} complaints={complaints} />
+          </CardContent>
+        </Card>
       </div>
 
       <div className="mt-6">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{t('dashboard.recentComplaints')}</h2>
-          <Link to="/complaints" className="text-sm font-medium text-primary hover:underline">
+          <h2 className="text-lg font-semibold">
+            {t('dashboard.recentComplaints')}
+          </h2>
+          <Link
+            to="/complaints"
+            className="text-sm font-medium text-primary hover:underline"
+          >
             {t('dashboard.viewAll')}
           </Link>
         </div>
-        <ComplaintTable complaints={recent} compact showActions={false} />
+        <ComplaintTable
+          complaints={recentComplaints}
+          compact
+          showActions={false}
+        />
       </div>
 
       {user?.role === 'admin' && (
@@ -312,8 +436,11 @@ const DashboardPage = () => {
                     key={entry.id}
                     className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
                   >
-                    <span className="text-sm font-medium">{entry.name}</span>
-                    <span className="rounded bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">
+                    <div className="flex items-center gap-3">
+                      <UserAvatar id={entry.id} fullName={entry.name} />
+                      <span className="text-sm font-medium">{entry.name}</span>
+                    </div>
+                    <span className="rounded bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
                       {t('dashboard.createdCount', { count: entry.count })}
                     </span>
                   </div>

@@ -24,10 +24,12 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
+  setColorTheme,
   setFontSize,
   setFontStyle,
   setLanguage,
   setTheme,
+  type ColorThemePreference,
   type FontSizePreference,
   type FontStylePreference,
   type LanguagePreference,
@@ -37,9 +39,19 @@ import { cn } from '@/lib/utils'
 
 interface PreferencesFormValues {
   theme: ThemePreference
+  colorTheme: ColorThemePreference
   fontSize: FontSizePreference
   fontStyle: FontStylePreference
   language: LanguagePreference
+}
+
+const COLOR_THEME_SWATCHES: Record<ColorThemePreference, string> = {
+  sovereign: '#2563EB',
+  emerald: '#10B981',
+  violet: '#8B5CF6',
+  rose: '#F43F5E',
+  amber: '#D97706',
+  teal: '#14B8A6',
 }
 
 const PreferencesPage = () => {
@@ -52,8 +64,24 @@ const PreferencesPage = () => {
     () =>
       z.object({
         theme: z.enum(['light', 'dark', 'system']),
+        colorTheme: z.enum([
+          'sovereign',
+          'emerald',
+          'violet',
+          'rose',
+          'amber',
+          'teal',
+        ]),
         fontSize: z.enum(['compact', 'default', 'comfortable', 'large']),
-        fontStyle: z.enum(['inter', 'system', 'noto-sans']),
+        fontStyle: z.enum([
+          'inter',
+          'system',
+          'noto-sans',
+          'poppins',
+          'roboto',
+          'lato',
+          'merriweather',
+        ]),
         language: z.enum(['en', 'hi']),
       }),
     [],
@@ -63,6 +91,7 @@ const PreferencesPage = () => {
     resolver: zodResolver(schema),
     defaultValues: {
       theme: preferences.theme,
+      colorTheme: preferences.colorTheme,
       fontSize: preferences.fontSize,
       fontStyle: preferences.fontStyle,
       language: preferences.language,
@@ -73,6 +102,15 @@ const PreferencesPage = () => {
     { value: 'light', label: t('preferences.light') },
     { value: 'dark', label: t('preferences.dark') },
     { value: 'system', label: t('preferences.system') },
+  ]
+
+  const colorThemes: { value: ColorThemePreference; label: string }[] = [
+    { value: 'sovereign', label: t('preferences.sovereign') },
+    { value: 'emerald', label: t('preferences.emerald') },
+    { value: 'violet', label: t('preferences.violet') },
+    { value: 'rose', label: t('preferences.rose') },
+    { value: 'amber', label: t('preferences.amber') },
+    { value: 'teal', label: t('preferences.teal') },
   ]
 
   const fontSizes: { value: FontSizePreference; label: string }[] = [
@@ -89,6 +127,7 @@ const PreferencesPage = () => {
 
   const save = (values: PreferencesFormValues) => {
     dispatch(setTheme(values.theme))
+    dispatch(setColorTheme(values.colorTheme))
     dispatch(setFontSize(values.fontSize))
     dispatch(setFontStyle(values.fontStyle))
     dispatch(setLanguage(values.language))
@@ -125,10 +164,44 @@ const PreferencesPage = () => {
                         className={cn(
                           'rounded-md border px-4 py-2 text-sm font-medium transition-colors',
                           field.value === option.value
-                            ? 'border-primary bg-blue-50 text-primary dark:bg-blue-950/40'
+                            ? 'border-primary bg-primary/10 text-primary'
                             : 'border-border bg-white text-muted-foreground hover:bg-muted dark:bg-slate-900',
                         )}
                       >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>{t('preferences.colorTheme')}</Label>
+              <Controller
+                control={control}
+                name="colorTheme"
+                render={({ field }) => (
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {colorThemes.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        aria-pressed={field.value === option.value}
+                        onClick={() => field.onChange(option.value)}
+                        className={cn(
+                          'flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors',
+                          field.value === option.value
+                            ? 'border-primary bg-primary/10 text-foreground ring-2 ring-primary/20'
+                            : 'border-border bg-white text-muted-foreground hover:bg-muted dark:bg-slate-900',
+                        )}
+                      >
+                        <span
+                          className="h-4 w-4 shrink-0 rounded-full"
+                          style={{
+                            backgroundColor: COLOR_THEME_SWATCHES[option.value],
+                          }}
+                        />
                         {option.label}
                       </button>
                     ))}
@@ -178,6 +251,12 @@ const PreferencesPage = () => {
                       <SelectItem value="inter">{t('preferences.inter')}</SelectItem>
                       <SelectItem value="system">{t('preferences.systemFont')}</SelectItem>
                       <SelectItem value="noto-sans">{t('preferences.notoSans')}</SelectItem>
+                      <SelectItem value="poppins">{t('preferences.poppins')}</SelectItem>
+                      <SelectItem value="roboto">{t('preferences.roboto')}</SelectItem>
+                      <SelectItem value="lato">{t('preferences.lato')}</SelectItem>
+                      <SelectItem value="merriweather">
+                        {t('preferences.merriweather')}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 )}

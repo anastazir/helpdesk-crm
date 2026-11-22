@@ -10,6 +10,7 @@ interface StatCardProps {
   icon?: LucideIcon
   className?: string
   valueClassName?: string
+  iconClassName?: string
 }
 
 const StatCard = ({
@@ -19,6 +20,7 @@ const StatCard = ({
   icon: Icon,
   className,
   valueClassName,
+  iconClassName,
 }: StatCardProps) => (
   <Card className={cn('border-border shadow-sm', className)}>
     <CardContent className="flex items-start justify-between gap-3 p-5">
@@ -30,7 +32,12 @@ const StatCard = ({
         {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
       </div>
       {Icon && (
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-primary dark:bg-blue-950/40">
+        <div
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary',
+            iconClassName,
+          )}
+        >
           <Icon className="h-5 w-5" />
         </div>
       )}

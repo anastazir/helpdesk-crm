@@ -56,6 +56,7 @@ export interface ComplaintListItem {
   issues: IssueType[]
   status: ComplaintStatus
   assigned_engineer: string | null
+  created_by: UserMini | null
   created_at: string
   time_open_seconds: number
   time_in_status_seconds: number

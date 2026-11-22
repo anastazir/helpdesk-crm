@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { FileText, Image as ImageIcon, Upload, X } from 'lucide-react'
+import { Camera, FileText, Image as ImageIcon, Upload, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
@@ -95,6 +95,7 @@ const FileUploadSection = ({
 }: FileUploadSectionProps) => {
   const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
+  const cameraRef = useRef<HTMLInputElement>(null)
   const [showHistory, setShowHistory] = useState(false)
   const [selected, setSelected] = useState<SelectedFile[]>([])
   const [uploading, setUploading] = useState(false)
@@ -109,27 +110,36 @@ const FileUploadSection = ({
     [selected],
   )
 
-  const handleFiles = (files: FileList | null) => {
+  const handleFiles = (files: FileList | null, append = false) => {
     if (!files) return
     const incoming = Array.from(files)
-    const validationError = validateFiles(incoming, t)
+    const existing = append ? selected : []
+    const validationError = validateFiles(
+      [...existing.map((item) => item.file), ...incoming],
+      t,
+    )
     if (validationError) {
       setError(validationError)
       if (inputRef.current) inputRef.current.value = ''
+      if (cameraRef.current) cameraRef.current.value = ''
       return
     }
 
-    selected.forEach((item) => {
-      if (item.preview) URL.revokeObjectURL(item.preview)
-    })
+    if (!append) {
+      selected.forEach((item) => {
+        if (item.preview) URL.revokeObjectURL(item.preview)
+      })
+    }
+
+    const newItems = incoming.map((file) => ({
+      file,
+      preview: isImage(file) ? URL.createObjectURL(file) : null,
+    }))
 
     setError(null)
-    setSelected(
-      incoming.map((file) => ({
-        file,
-        preview: isImage(file) ? URL.createObjectURL(file) : null,
-      })),
-    )
+    setSelected(append ? [...selected, ...newItems] : newItems)
+    if (inputRef.current) inputRef.current.value = ''
+    if (cameraRef.current) cameraRef.current.value = ''
   }
 
   const removeFile = (index: number) => {
@@ -140,6 +150,7 @@ const FileUploadSection = ({
       return next
     })
     if (inputRef.current) inputRef.current.value = ''
+    if (cameraRef.current) cameraRef.current.value = ''
   }
 
   const upload = async () => {
@@ -158,6 +169,7 @@ const FileUploadSection = ({
       })
       setSelected([])
       if (inputRef.current) inputRef.current.value = ''
+      if (cameraRef.current) cameraRef.current.value = ''
       onUploaded()
     } catch (uploadError) {
       logger.error('[UPLOAD] Upload failed.', uploadError)
@@ -237,15 +249,34 @@ const FileUploadSection = ({
               className="hidden"
               onChange={(event) => handleFiles(event.target.files)}
             />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => inputRef.current?.click()}
-              disabled={uploading}
-            >
-              <Upload className="h-4 w-4" />
-              {t('complaint.chooseFiles')}
-            </Button>
+            <input
+              ref={cameraRef}
+              type="file"
+              accept="image/jpeg,image/png"
+              capture="environment"
+              className="hidden"
+              onChange={(event) => handleFiles(event.target.files, true)}
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => cameraRef.current?.click()}
+                disabled={uploading}
+              >
+                <Camera className="h-4 w-4" />
+                {t('complaint.takePhoto')}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => inputRef.current?.click()}
+                disabled={uploading}
+              >
+                <Upload className="h-4 w-4" />
+                {t('complaint.chooseFiles')}
+              </Button>
+            </div>
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}

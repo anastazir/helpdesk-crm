@@ -19,13 +19,21 @@ const FONT_STYLES: Record<FontStylePreference, string> = {
   inter: 'font-inter',
   system: 'font-sans',
   'noto-sans': 'font-noto-devanagari',
+  poppins: 'font-poppins',
+  roboto: 'font-roboto',
+  lato: 'font-lato',
+  merriweather: 'font-merriweather',
 }
 
 const App = () => {
   const { i18n } = useTranslation()
-  const { theme, fontSize, fontStyle, language } = useAppSelector(
+  const { theme, colorTheme, fontSize, fontStyle, language } = useAppSelector(
     (state) => state.preferences,
   )
+
+  useEffect(() => {
+    document.documentElement.dataset.colorTheme = colorTheme
+  }, [colorTheme])
 
   useEffect(() => {
     const root = document.documentElement

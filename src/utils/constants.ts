@@ -22,6 +22,16 @@ export const STATUS_BADGE_CLASSES: Record<ComplaintStatus, string> = {
   closed: 'bg-green-700 text-white',
 }
 
+export const STATUS_CHART_COLORS: Record<ComplaintStatus, string> = {
+  open: '#94A3B8',
+  assigned: '#3B82F6',
+  in_progress: '#F59E0B',
+  parts_requested: '#8B5CF6',
+  parts_provided: '#06B6D4',
+  resolved: '#22C55E',
+  closed: '#15803D',
+}
+
 export const ROLE_LABELS: Record<UserRole, string> = {
   admin: 'Admin',
   helpdesk: 'Help Desk',
