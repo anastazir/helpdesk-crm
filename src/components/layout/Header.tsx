@@ -23,6 +23,7 @@ import type { LanguagePreference } from '@/store/slices/preferencesSlice'
 const Header = () => {
   const { t } = useTranslation()
   const { user } = useAuth()
+  const aiEnabled = useAppSelector((state) => state.assistant.aiEnabled)
   const { logout, loggingOut } = useLogout()
   const dispatch = useAppDispatch()
   const language = useAppSelector((state) => state.preferences.language)
@@ -130,16 +131,18 @@ const Header = () => {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="hidden md:inline-flex"
-          onClick={() => dispatch(setAiChatOpen(true))}
-        >
-          <Sparkles className="h-4 w-4" />
-          {t('ai.chat.open')}
-        </Button>
+        {aiEnabled && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="hidden md:inline-flex"
+            onClick={() => dispatch(setAiChatOpen(true))}
+          >
+            <Sparkles className="h-4 w-4" />
+            {t('ai.chat.open')}
+          </Button>
+        )}
         <div className="flex items-center rounded-lg border border-border bg-muted p-0.5">
           <button
             type="button"

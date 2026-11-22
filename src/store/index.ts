@@ -14,6 +14,7 @@ import storage from 'redux-persist/lib/storage'
 
 import type { AuthState } from '@/types/auth.types'
 
+import assistantReducer from './slices/assistantSlice'
 import authReducer from './slices/authSlice'
 import preferencesReducer, {
   type PreferencesState,
@@ -33,6 +34,7 @@ const preferencesPersistConfig: PersistConfig<PreferencesState> = {
 
 export const store = configureStore({
   reducer: {
+    assistant: assistantReducer,
     auth: persistReducer(authPersistConfig, authReducer) as unknown as Reducer<AuthState>,
     preferences: persistReducer(
       preferencesPersistConfig,

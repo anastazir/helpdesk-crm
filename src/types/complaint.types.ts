@@ -34,7 +34,15 @@ export interface Complaint {
   department: string | null
   designation: string | null
   address: string | null
+  address_remark: string | null
   pincode: string | null
+  latitude: number | string | null
+  longitude: number | string | null
+  geocode_status: 'not_geocoded' | 'address' | 'landmark' | 'pincode' | 'manual' | 'not_found' | 'failed'
+  geocode_label: string
+  geocode_provider: string
+  geocode_updated_at: string | null
+  map_radius_m: number | null
   cpu_serial: string | null
   monitor_serial: string | null
   issues: IssueType[]
@@ -139,7 +147,14 @@ export interface CreateComplaintPayload {
   department?: string | null
   designation?: string | null
   address?: string | null
+  address_remark?: string | null
   pincode?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  geocode_status?: 'not_geocoded' | 'address' | 'landmark' | 'pincode' | 'manual' | 'not_found' | 'failed'
+  geocode_label?: string | null
+  geocode_provider?: string | null
+  map_radius_m?: number | null
   cpu_serial?: string | null
   monitor_serial?: string | null
   issue_ids: number[]
@@ -152,7 +167,14 @@ export interface UpdateComplaintPayload {
   department?: string | null
   designation?: string | null
   address?: string | null
+  address_remark?: string | null
   pincode?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  geocode_status?: 'not_geocoded' | 'address' | 'landmark' | 'pincode' | 'manual' | 'not_found' | 'failed'
+  geocode_label?: string | null
+  geocode_provider?: string | null
+  map_radius_m?: number | null
   cpu_serial?: string | null
   monitor_serial?: string | null
 }

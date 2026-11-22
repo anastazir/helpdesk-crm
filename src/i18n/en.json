@@ -161,7 +161,7 @@
     "othersDescription": "Others Description",
     "createdBy": "Created By",
     "callerInformation": "Caller Information",
-    "location": "Location",
+    "location": "Approximate location",
     "callerDetails": "Caller Details",
     "hardware": "Hardware",
     "issueDetails": "Issue Details",
@@ -263,7 +263,34 @@
     "unassignedAt": "Unassigned at",
     "noAssignments": "No assignment history yet.",
     "currentStatus": "Current status",
-    "remark": "Remark"
+    "remark": "Remark",
+    "addressRemark": "Address remark",
+    "addressRemarkPlaceholder": "Near the metro station, behind the mall...",
+    "approximateLocation": "Approximate location",
+    "locationHint": "Locate the address on OpenStreetMap. The pin is approximate.",
+    "locate": "Locate approximate area",
+    "locating": "Locating...",
+    "locationFailed": "Could not locate this address.",
+    "locationNotFound": "No location matched. Try a clearer address or pincode.",
+    "locationUnavailable": "Location has not been set yet.",
+    "locationNeedsAddress": "Enter an address, remark, or pincode first.",
+    "aiLocation": "AI-assisted location",
+    "refreshLocation": "Refresh location",
+    "openMap": "Open in OpenStreetMap",
+    "mapAttribution": "Map data © OpenStreetMap contributors.",
+    "geocodeStatus": {
+      "not_geocoded": "Location not set",
+      "address": "Address match",
+      "landmark": "Landmark approximate",
+      "pincode": "Pincode area only",
+      "not_found": "No match found",
+      "failed": "Location lookup failed",
+      "manual": "Pinned manually"
+    },
+    "manualPinLabel": "Pinned manually",
+    "pinHint": "Drag the pin to correct the location.",
+    "savePin": "Save corrected pin",
+    "pinSaved": "Location pin saved."
   },
   "assign": {
     "title": "Assign Engineer",
@@ -428,7 +455,8 @@
         "triage": "AI Triage",
         "export_summary": "Export Summary",
         "complaint_autofill": "Complaint Autofill",
-        "analytics": "AI Analytics"
+        "analytics": "AI Analytics",
+        "geocode": "Address Geocoding"
       }
     },
     "analytics": {
@@ -584,7 +612,6 @@
     "saving": "Saving...",
     "noZones": "No zones yet.",
     "noEngineers": "No engineers assigned.",
-    "hq": "HQ",
     "zoneCreatedToast": "Zone created.",
     "zoneUpdatedToast": "Zone updated.",
     "loadFailed": "Could not load zones.",
@@ -709,7 +736,18 @@
     "preview": "Dark Mode Preview",
     "previewTitle": "Preview",
     "previewText": "This is how content will look with your selected appearance settings.",
-    "loadFailed": "Could not save preferences."
+    "loadFailed": "Could not save preferences.",
+    "aiFeatures": "AI Features",
+    "aiFeaturesDescription": "Turn off AI assistance across the CRM. AI cards, chat, and AI actions will be hidden for everyone. Existing AI logs remain available for audit.",
+    "aiOn": "On",
+    "aiOff": "Off",
+    "turnOffAi": "Turn off AI",
+    "turnOnAi": "Turn on AI",
+    "turnOffAiHint": "AI cards and chat will disappear for all users. You can turn AI back on here at any time.",
+    "aiLogsRemain": "AI audit logs remain available to admins.",
+    "aiSaveFailed": "Could not update the AI setting.",
+    "aiTurnedOn": "AI features turned on.",
+    "aiTurnedOff": "AI features turned off."
   },
   "pagination": {
     "previous": "Previous",

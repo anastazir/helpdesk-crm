@@ -15,8 +15,8 @@ import { Link } from 'react-router-dom'
 import { complaintsApi } from '@/api/complaints.api'
 import { usersApi } from '@/api/users.api'
 import { zonesApi } from '@/api/zones.api'
+import { useAppSelector } from '@/store/hooks'
 import AiAnalyticsCard from '@/components/dashboard/AiAnalyticsCard'
-import AiBriefingCard from '@/components/dashboard/AiBriefingCard'
 import AgingBuckets from '@/components/dashboard/AgingBuckets'
 import EngineerWorkload from '@/components/dashboard/EngineerWorkload'
 import IssueHotspots from '@/components/dashboard/IssueHotspots'
@@ -52,6 +52,7 @@ interface TeamActivityEntry {
 }
 
 const DashboardPage = () => {
+  const aiEnabled = useAppSelector((state) => state.assistant.aiEnabled)
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const [complaints, setComplaints] = useState<ComplaintListItem[]>([])
@@ -280,8 +281,7 @@ const DashboardPage = () => {
         />
       </div>
 
-      <AiBriefingCard />
-      {user?.role === 'admin' && <AiAnalyticsCard />}
+      {aiEnabled && user?.role === 'admin' && <AiAnalyticsCard />}
 
       <div className="mt-6 grid gap-6 xl:grid-cols-3">
         <Card className="border-border shadow-sm">

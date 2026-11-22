@@ -52,6 +52,7 @@ const FEATURES = [
   'export_summary',
   'complaint_autofill',
   'analytics',
+  'geocode',
 ]
 
 const AiLogsPage = () => {

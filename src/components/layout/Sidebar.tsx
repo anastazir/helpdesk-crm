@@ -15,11 +15,6 @@ import { NavLink } from 'react-router-dom'
 
 import RoleBadge from '@/components/common/RoleBadge'
 import UserAvatar from '@/components/common/UserAvatar'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useAppSelector } from '@/store/hooks'
@@ -94,15 +89,17 @@ export const SidebarContent = ({
       <nav className={cn('flex-1 space-y-1', collapsed ? 'p-2' : 'p-3')}>
         {navItems.map((item) => {
           const Icon = item.icon
-          const link = (
+          return (
             <NavLink
+              key={item.to}
               to={item.to}
               onClick={onNavigate}
               aria-label={t(item.labelKey)}
+              title={collapsed ? t(item.labelKey) : undefined}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center rounded-lg text-sm font-medium transition-colors',
-                  collapsed ? 'justify-center px-0 py-2.5' : 'gap-3 px-3 py-2',
+                  'flex w-full items-center rounded-lg text-sm font-medium transition-colors',
+                  collapsed ? 'h-10 justify-center px-0' : 'h-10 gap-3 px-3',
                   isActive
                     ? 'bg-primary text-white'
                     : 'text-slate-300 hover:bg-slate-800 hover:text-white',
@@ -112,17 +109,6 @@ export const SidebarContent = ({
               <Icon className="h-5 w-5 shrink-0" />
               {!collapsed && <span>{t(item.labelKey)}</span>}
             </NavLink>
-          )
-
-          if (!collapsed) {
-            return <div key={item.to}>{link}</div>
-          }
-
-          return (
-            <Tooltip key={item.to}>
-              <TooltipTrigger asChild>{link}</TooltipTrigger>
-              <TooltipContent side="right">{t(item.labelKey)}</TooltipContent>
-            </Tooltip>
           )
         })}
       </nav>

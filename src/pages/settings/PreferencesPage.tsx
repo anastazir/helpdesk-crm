@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import RoleBadge from '@/components/common/RoleBadge'
+import AiSettingsCard from '@/components/settings/AiSettingsCard'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -345,6 +346,8 @@ const PreferencesPage = () => {
 
         <Button type="submit">{t('preferences.savePreferences')}</Button>
       </form>
+
+      <AiSettingsCard />
 
       <Card className="mt-6 border-border shadow-sm">
         <CardHeader>

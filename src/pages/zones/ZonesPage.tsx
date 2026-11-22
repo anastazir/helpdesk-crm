@@ -247,12 +247,7 @@ const ZonesPage = () => {
               {zones.map((zone) => (
                 <div
                   key={zone.id}
-                  className={cn(
-                    'flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between',
-                    zone.name === 'HQ'
-                      ? 'bg-amber-50 dark:bg-amber-950/20'
-                      : 'bg-white dark:bg-slate-900',
-                  )}
+                  className="flex flex-col gap-3 bg-white p-4 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="flex min-w-0 flex-1 items-start gap-3">
                     <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded bg-blue-50 text-primary">
@@ -272,11 +267,6 @@ const ZonesPage = () => {
                         <>
                           <div className="flex flex-wrap items-center gap-2">
                             <p className="text-sm font-semibold">{zone.name}</p>
-                            {zone.name === 'HQ' && (
-                              <Badge className="rounded bg-amber-100 text-amber-700">
-                                {t('zones.hq')}
-                              </Badge>
-                            )}
                             <Badge className="rounded bg-slate-100 text-slate-600">
                               {t('zones.complaintCount', {
                                 count: zone.complaint_count ?? 0,

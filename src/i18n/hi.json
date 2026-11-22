@@ -161,7 +161,7 @@
     "othersDescription": "अन्य विवरण",
     "createdBy": "बनाया गया द्वारा",
     "callerInformation": "कॉलर जानकारी",
-    "location": "स्थान",
+    "location": "अनुमानित स्थान",
     "callerDetails": "कॉलर विवरण",
     "hardware": "हार्डवेयर",
     "issueDetails": "समस्या विवरण",
@@ -263,7 +263,34 @@
     "unassignedAt": "अनअसाइन समय",
     "noAssignments": "अभी कोई असाइनमेंट इतिहास नहीं है।",
     "currentStatus": "वर्तमान स्टेटस",
-    "remark": "टिप्पणी"
+    "remark": "टिप्पणी",
+    "addressRemark": "पते की टिप्पणी",
+    "addressRemarkPlaceholder": "मेट्रो स्टेशन के पास, मॉल के पीछे...",
+    "approximateLocation": "अनुमानित स्थान",
+    "locationHint": "OpenStreetMap पर पता खोजें। पिन अनुमानित है।",
+    "locate": "अनुमानित क्षेत्र खोजें",
+    "locating": "स्थान खोजा जा रहा है...",
+    "locationFailed": "इस पते का स्थान नहीं मिल सका।",
+    "locationNotFound": "कोई स्थान नहीं मिला। स्पष्ट पता या पिनकोड आज़माएं।",
+    "locationUnavailable": "स्थान अभी सेट नहीं है।",
+    "locationNeedsAddress": "पहले पता, टिप्पणी या पिनकोड दर्ज करें।",
+    "aiLocation": "AI-सहायित स्थान",
+    "refreshLocation": "स्थान फिर खोजें",
+    "openMap": "OpenStreetMap में खोलें",
+    "mapAttribution": "मैप डेटा © OpenStreetMap contributors।",
+    "geocodeStatus": {
+      "not_geocoded": "स्थान सेट नहीं",
+      "address": "पता मिला",
+      "landmark": "लैंडमार्क अनुमानित",
+      "pincode": "केवल पिनकोड क्षेत्र",
+      "not_found": "कोई मेल नहीं",
+      "failed": "स्थान खोज विफल",
+      "manual": "मैन्युअली पिन किया गया"
+    },
+    "manualPinLabel": "मैन्युअली पिन किया गया",
+    "pinHint": "स्थान सुधारने के लिए पिन खींचें।",
+    "savePin": "सुधारा हुआ पिन सहेजें",
+    "pinSaved": "स्थान पिन सहेजा गया।"
   },
   "assign": {
     "title": "इंजीनियर असाइन करें",
@@ -428,7 +455,8 @@
         "triage": "AI ट्राइएज",
         "export_summary": "एक्सपोर्ट सारांश",
         "complaint_autofill": "शिकायत ऑटोफिल",
-        "analytics": "AI विश्लेषण"
+        "analytics": "AI विश्लेषण",
+        "geocode": "पता जियोकोडिंग"
       }
     },
     "analytics": {
@@ -584,7 +612,6 @@
     "saving": "सहेजा जा रहा है...",
     "noZones": "अभी कोई ज़ोन नहीं है।",
     "noEngineers": "कोई इंजीनियर असाइन नहीं है।",
-    "hq": "मुख्यालय",
     "zoneCreatedToast": "ज़ोन बनाया गया।",
     "zoneUpdatedToast": "ज़ोन अपडेट हुआ।",
     "loadFailed": "ज़ोन लोड नहीं हो सके।",
@@ -709,7 +736,18 @@
     "preview": "डार्क मोड पूर्वावलोकन",
     "previewTitle": "पूर्वावलोकन",
     "previewText": "आपकी चयनित रूप-रंग सेटिंग्स के साथ सामग्री ऐसी दिखेगी।",
-    "loadFailed": "प्राथमिकताएँ सहेजी नहीं जा सकीं।"
+    "loadFailed": "प्राथमिकताएँ सहेजी नहीं जा सकीं।",
+    "aiFeatures": "AI सुविधाएं",
+    "aiFeaturesDescription": "पूरे CRM में AI सहायता बंद करें। सभी के लिए AI कार्ड, चैट और AI क्रियाएं छिप जाएंगी। पुराने AI लॉग ऑडिट के लिए उपलब्ध रहेंगे।",
+    "aiOn": "चालू",
+    "aiOff": "बंद",
+    "turnOffAi": "AI बंद करें",
+    "turnOnAi": "AI चालू करें",
+    "turnOffAiHint": "सभी उपयोगकर्ताओं के लिए AI कार्ड और चैट छिप जाएंगे। आप यहां से कभी भी AI चालू कर सकते हैं।",
+    "aiLogsRemain": "AI ऑडिट लॉग एडमिन के लिए उपलब्ध रहेंगे।",
+    "aiSaveFailed": "AI सेटिंग अपडेट नहीं हो सकी।",
+    "aiTurnedOn": "AI सुविधाएं चालू हो गईं।",
+    "aiTurnedOff": "AI सुविधाएं बंद हो गईं।"
   },
   "pagination": {
     "previous": "पिछला",

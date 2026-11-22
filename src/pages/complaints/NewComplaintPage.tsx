@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { useAppSelector } from '@/store/hooks'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -12,6 +13,7 @@ import AiVoiceIntakeCard from '@/components/complaints/AiVoiceIntakeCard'
 import { issuesApi } from '@/api/issues.api'
 import { zonesApi } from '@/api/zones.api'
 import AiTriageCard from '@/components/complaints/AiTriageCard'
+import ComplaintLocationPicker from '@/components/maps/ComplaintLocationPicker'
 import SpeechButton from '@/components/common/SpeechButton'
 import ErrorBanner from '@/components/common/ErrorBanner'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
@@ -47,7 +49,14 @@ const createSchema = (t: (key: string) => string) =>
     aadhaar: z.string(),
     zone_id: z.string().min(1, t('validation.zoneRequired')),
     address: z.string(),
+    address_remark: z.string(),
     pincode: z.string(),
+    latitude: z.number().nullable(),
+    longitude: z.number().nullable(),
+    geocode_status: z.string(),
+    geocode_label: z.string(),
+    geocode_provider: z.string(),
+    map_radius_m: z.number().nullable(),
     department: z.string(),
     designation: z.string(),
     cpu_serial: z.string(),
@@ -60,6 +69,7 @@ type ComplaintFormValues = z.infer<ReturnType<typeof createSchema>>
 
 const NewComplaintPage = () => {
   const { t, i18n } = useTranslation()
+  const aiEnabled = useAppSelector((state) => state.assistant.aiEnabled)
   const navigate = useNavigate()
   const [zones, setZones] = useState<Zone[]>([])
   const [issues, setIssues] = useState<IssueType[]>([])
@@ -86,7 +96,14 @@ const NewComplaintPage = () => {
       aadhaar: '',
       zone_id: '',
       address: '',
+      address_remark: '',
       pincode: '',
+      latitude: null,
+      longitude: null,
+      geocode_status: 'not_geocoded',
+      geocode_label: '',
+      geocode_provider: '',
+      map_radius_m: null,
       department: '',
       designation: '',
       cpu_serial: '',
@@ -154,7 +171,20 @@ const NewComplaintPage = () => {
         aadhaar: values.aadhaar.trim() || null,
         zone_id: Number(values.zone_id),
         address: values.address.trim() || null,
+        address_remark: values.address_remark.trim() || null,
         pincode: values.pincode.trim() || null,
+        latitude: values.latitude,
+        longitude: values.longitude,
+        geocode_status: values.geocode_status as
+          | 'not_geocoded'
+          | 'address'
+          | 'landmark'
+          | 'pincode'
+          | 'not_found'
+          | 'failed',
+        geocode_label: values.geocode_label || null,
+        geocode_provider: values.geocode_provider || null,
+        map_radius_m: values.map_radius_m,
         department: values.department.trim() || null,
         designation: values.designation.trim() || null,
         cpu_serial: values.cpu_serial.trim() || null,
@@ -192,6 +222,7 @@ const NewComplaintPage = () => {
       'department',
       'designation',
       'address',
+      'address_remark',
       'pincode',
       'cpu_serial',
       'monitor_serial',
@@ -227,7 +258,7 @@ const NewComplaintPage = () => {
       {optionsError && <ErrorBanner message={optionsError} onRetry={() => void loadOptions()} />}
       {submitError && <ErrorBanner message={submitError} />}
 
-      <AiVoiceIntakeCard onApply={applyAutofill} />
+      {aiEnabled && <AiVoiceIntakeCard onApply={applyAutofill} />}
 
       <form onSubmit={handleSubmit(submit)} className="space-y-5">
         <Card className="border-border shadow-sm">
@@ -324,6 +355,45 @@ const NewComplaintPage = () => {
                   language={i18n.language.startsWith('hi') ? 'hi-IN' : 'en-IN'}
                 />
               </div>
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor="address-remark">
+                {t('complaint.addressRemark')}{' '}
+                <span className="text-muted-foreground">({t('common.optional')})</span>
+              </Label>
+              <div className="flex items-start gap-2">
+                <Textarea
+                  id="address-remark"
+                  rows={2}
+                  placeholder={t('complaint.addressRemarkPlaceholder')}
+                  {...register('address_remark')}
+                />
+                <SpeechButton
+                  onTranscript={(text) =>
+                    setValue(
+                      'address_remark',
+                      `${watch('address_remark')} ${text}`.trim(),
+                      { shouldDirty: true },
+                    )
+                  }
+                  language={i18n.language.startsWith('hi') ? 'hi-IN' : 'en-IN'}
+                />
+              </div>
+            </div>
+            <div className="sm:col-span-2">
+              <ComplaintLocationPicker
+                address={watch('address')}
+                addressRemark={watch('address_remark')}
+                pincode={watch('pincode')}
+                onLocated={(result) => {
+                  setValue('latitude', result?.latitude ?? null)
+                  setValue('longitude', result?.longitude ?? null)
+                  setValue('geocode_status', result?.status ?? 'not_geocoded')
+                  setValue('geocode_label', result?.label ?? '')
+                  setValue('geocode_provider', result?.provider ?? '')
+                  setValue('map_radius_m', result?.map_radius_m ?? null)
+                }}
+              />
             </div>
           </CardContent>
         </Card>
@@ -438,7 +508,7 @@ const NewComplaintPage = () => {
           </CardContent>
         </Card>
 
-        <AiTriageCard
+        {aiEnabled && <AiTriageCard
           issueIds={selectedIssues}
           othersDescription={watch('others_description')}
           department={watch('department')}
@@ -446,7 +516,7 @@ const NewComplaintPage = () => {
           onApply={(issueIds) =>
             setValue('issue_ids', issueIds, { shouldValidate: true })
           }
-        />
+        />}
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button type="button" variant="outline" asChild>

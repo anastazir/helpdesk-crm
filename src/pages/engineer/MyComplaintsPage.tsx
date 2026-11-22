@@ -11,6 +11,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner'
 import PageHeader from '@/components/common/PageHeader'
 import StatCard from '@/components/common/StatCard'
 import AiDayPlanCard from '@/components/engineer/AiDayPlanCard'
+import { useAppSelector } from '@/store/hooks'
 import SLATimer from '@/components/complaints/SLATimer'
 import StatusBadge from '@/components/complaints/StatusBadge'
 import StatusTabBar from '@/components/complaints/StatusTabBar'
@@ -38,6 +39,7 @@ const ACTIVE_STATUSES: ComplaintStatus[] = [
 
 const MyComplaintsPage = () => {
   const { t } = useTranslation()
+  const aiEnabled = useAppSelector((state) => state.assistant.aiEnabled)
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [complaints, setComplaints] = useState<Complaint[]>([])
@@ -151,7 +153,7 @@ const MyComplaintsPage = () => {
         />
       </div>
 
-      <AiDayPlanCard />
+      {aiEnabled && <AiDayPlanCard />}
 
       {filtered.length === 0 ? (
         <EmptyState title={t('engineer.noComplaints')} />

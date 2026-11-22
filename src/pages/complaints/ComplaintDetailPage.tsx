@@ -13,6 +13,7 @@ import { uploadsApi } from '@/api/uploads.api'
 import { usersApi } from '@/api/users.api'
 import AssignEngineerModal from '@/components/complaints/AssignEngineerModal'
 import AiComplaintCopilot from '@/components/complaints/AiComplaintCopilot'
+import ComplaintMapCard from '@/components/complaints/ComplaintMapCard'
 import CommentSection from '@/components/complaints/CommentSection'
 import FileUploadSection from '@/components/complaints/FileUploadSection'
 import JobNoteCard from '@/components/complaints/JobNoteCard'
@@ -35,6 +36,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/hooks/useAuth'
+import { useAppSelector } from '@/store/hooks'
 import type { EngineerUser } from '@/types/auth.types'
 import type {
   Comment,
@@ -55,6 +57,7 @@ interface EditFormValues {
   department: string
   designation: string
   address: string
+  address_remark: string
   pincode: string
   cpu_serial: string
   monitor_serial: string
@@ -75,6 +78,7 @@ const ComplaintDetailPage = () => {
   const { t } = useTranslation()
   const params = useParams<{ id: string }>()
   const { user } = useAuth()
+  const aiEnabled = useAppSelector((state) => state.assistant.aiEnabled)
   const complaintId = Number(params.id)
   const [complaint, setComplaint] = useState<Complaint | null>(null)
   const [history, setHistory] = useState<StatusHistoryRecord[]>([])
@@ -98,6 +102,7 @@ const ComplaintDetailPage = () => {
         department: z.string(),
         designation: z.string(),
         address: z.string(),
+        address_remark: z.string(),
         pincode: z.string(),
         cpu_serial: z.string(),
         monitor_serial: z.string(),
@@ -113,6 +118,7 @@ const ComplaintDetailPage = () => {
       department: '',
       designation: '',
       address: '',
+      address_remark: '',
       pincode: '',
       cpu_serial: '',
       monitor_serial: '',
@@ -131,6 +137,7 @@ const ComplaintDetailPage = () => {
       department: data.department ?? '',
       designation: data.designation ?? '',
       address: data.address ?? '',
+      address_remark: data.address_remark ?? '',
       pincode: data.pincode ?? '',
       cpu_serial: data.cpu_serial ?? '',
       monitor_serial: data.monitor_serial ?? '',
@@ -204,6 +211,7 @@ const ComplaintDetailPage = () => {
         department: values.department.trim() || null,
         designation: values.designation.trim() || null,
         address: values.address.trim() || null,
+        address_remark: values.address_remark.trim() || null,
         pincode: values.pincode.trim() || null,
         cpu_serial: values.cpu_serial.trim() || null,
         monitor_serial: values.monitor_serial.trim() || null,
@@ -425,6 +433,16 @@ const ComplaintDetailPage = () => {
                             {...editForm.register('address')}
                           />
                         </div>
+                        <div className="space-y-1.5 sm:col-span-2">
+                          <Label htmlFor="edit-address-remark">
+                            {t('complaint.addressRemark')}
+                          </Label>
+                          <Textarea
+                            id="edit-address-remark"
+                            rows={2}
+                            {...editForm.register('address_remark')}
+                          />
+                        </div>
                       </>
                     )}
 
@@ -506,6 +524,10 @@ const ComplaintDetailPage = () => {
                   <DetailField
                     label={t('complaint.address')}
                     value={complaint.address ?? t('complaint.notRecorded')}
+                  />
+                  <DetailField
+                    label={t('complaint.addressRemark')}
+                    value={complaint.address_remark ?? t('complaint.notRecorded')}
                   />
                   <DetailField
                     label={t('complaint.cpuSerial')}
@@ -634,9 +656,17 @@ const ComplaintDetailPage = () => {
             </Card>
           )}
 
-          <AiComplaintCopilot
-            complaintId={complaint.id}
-            canDraft={canComment}
+          {aiEnabled && (
+            <AiComplaintCopilot
+              complaintId={complaint.id}
+              canDraft={canComment}
+            />
+          )}
+
+          <ComplaintMapCard
+            complaint={complaint}
+            canLocate={isAdminOrHD}
+            onUpdated={setComplaint}
           />
 
           <Card className="border-border shadow-sm" id="job-note-card">

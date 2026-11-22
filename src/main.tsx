@@ -5,6 +5,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 
 import App from '@/App'
 import '@/i18n'
+import 'leaflet/dist/leaflet.css'
 import '@/index.css'
 import { persistor, store } from '@/store'
 

@@ -161,6 +161,7 @@ export interface AutofillFields {
   department: string | null
   designation: string | null
   address: string | null
+  address_remark: string | null
   pincode: string | null
   cpu_serial: string | null
   monitor_serial: string | null
@@ -249,6 +250,31 @@ export const dashboardAnalyticsApi = {
       '/assistant/analytics/',
       { question, language: language(locale) },
       { timeout: 120000 },
+    )
+    return response.data
+  },
+}
+
+
+export interface AssistantSettings {
+  ai_enabled: boolean
+  stored_ai_enabled: boolean
+  can_manage: boolean
+}
+
+export const assistantSettingsApi = {
+  get: async (): Promise<ApiResponse<AssistantSettings>> => {
+    logger.api('GET', '/assistant/settings/')
+    const response = await api.get<ApiResponse<AssistantSettings>>(
+      '/assistant/settings/',
+    )
+    return response.data
+  },
+  update: async (aiEnabled: boolean): Promise<ApiResponse<AssistantSettings>> => {
+    logger.api('PATCH', '/assistant/settings/', { ai_enabled: aiEnabled })
+    const response = await api.patch<ApiResponse<AssistantSettings>>(
+      '/assistant/settings/',
+      { ai_enabled: aiEnabled },
     )
     return response.data
   },

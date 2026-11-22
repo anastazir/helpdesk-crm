@@ -90,6 +90,25 @@ export const complaintsApi = {
     return res.data
   },
 
+  updateLocation: async (
+    id: number,
+    latitude: number,
+    longitude: number,
+  ): Promise<ApiResponse<Complaint>> => {
+    logger.api('POST', `/complaints/${id}/location/`, { latitude, longitude })
+    const res = await api.post<ApiResponse<Complaint>>(
+      `/complaints/${id}/location/`,
+      { latitude, longitude },
+    )
+    return res.data
+  },
+
+  geocode: async (id: number): Promise<ApiResponse<Complaint>> => {
+    logger.api('POST', `/complaints/${id}/geocode/`)
+    const res = await api.post<ApiResponse<Complaint>>(`/complaints/${id}/geocode/`)
+    return res.data
+  },
+
   reopen: async (id: number, data: ReopenPayload): Promise<ApiResponse<Complaint>> => {
     logger.api('POST', `/complaints/${id}/reopen/`, data)
     const res = await api.post<ApiResponse<Complaint>>(`/complaints/${id}/reopen/`, data)
