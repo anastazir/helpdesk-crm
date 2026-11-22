@@ -3,7 +3,12 @@ import { Loader2, MessageCircle, Send, Sparkles, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
-import { aiApi, type ChatHistoryItem, type ChatReference } from '@/api/ai.api'
+import {
+  aiApi,
+  type ChatHistoryItem,
+  type ChatReference,
+  type ChatStreamEvent,
+} from '@/api/ai.api'
 import SpeechButton from '@/components/common/SpeechButton'
 import { useAuth } from '@/hooks/useAuth'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
@@ -28,20 +33,28 @@ interface ChatMessage {
   references?: ChatReference[]
   tokens?: number
   costInr?: number | null
+  streaming?: boolean
+}
+
+interface StreamStatus {
+  key: string
+  params?: Record<string, string | number>
 }
 
 const nextId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
 
 const AiChatDrawer = () => {
   const { t, i18n } = useTranslation()
-  const { user } = useAuth()
+  const { user, accessToken } = useAuth()
   const dispatch = useAppDispatch()
   const open = useAppSelector((state) => state.ui.aiChatOpen)
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [streamStatus, setStreamStatus] = useState<StreamStatus | null>(null)
   const endRef = useRef<HTMLDivElement>(null)
+  const abortRef = useRef<AbortController | null>(null)
   const setOpen = (next: boolean) => dispatch(setAiChatOpen(next))
 
   const promptKeys =
@@ -55,7 +68,7 @@ const AiChatDrawer = () => {
     if (open) {
       endRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
-  }, [messages, loading, open])
+  }, [messages, loading, streamStatus, open])
 
   const send = async (text: string) => {
     const message = text.trim()
@@ -66,39 +79,123 @@ const AiChatDrawer = () => {
       .slice(-10)
       .map((item) => ({ role: item.role, content: item.content }))
 
+    const assistantId = nextId()
     setMessages((current) => [
       ...current,
       { id: nextId(), role: 'user', content: message },
+      {
+        id: assistantId,
+        role: 'assistant',
+        content: '',
+        streaming: true,
+      },
     ])
     setInput('')
     setError(null)
+    setStreamStatus({ key: 'ai.chat.status.thinking' })
     setLoading(true)
-    try {
-      const response = await aiApi.chat(message, history, i18n.language)
-      if (!response.success || !response.data) {
-        throw new Error(response.message || t('ai.chat.error'))
+
+    const controller = new AbortController()
+    abortRef.current = controller
+    let streamedContent = ''
+    let streamError: string | null = null
+
+    const handleEvent = (event: ChatStreamEvent) => {
+      if (event.type === 'status') {
+        setStreamStatus({ key: event.key, params: event.params })
+        return
       }
-      const data = response.data
-      setMessages((current) => [
-        ...current,
-        {
-          id: nextId(),
-          role: 'assistant',
-          content: data.reply,
-          references: data.references,
-          tokens: data.usage.total_tokens,
-          costInr: data.usage.cost_inr,
-        },
-      ])
-      logger.info('[AI CHAT] Reply received.', {
+      if (event.type === 'token') {
+        streamedContent += event.text
+        setStreamStatus(null)
+        setMessages((current) =>
+          current.map((item) =>
+            item.id === assistantId
+              ? { ...item, content: streamedContent }
+              : item,
+          ),
+        )
+        return
+      }
+      if (event.type === 'reset') {
+        streamedContent = ''
+        setMessages((current) =>
+          current.map((item) =>
+            item.id === assistantId ? { ...item, content: '' } : item,
+          ),
+        )
+        return
+      }
+      if (event.type === 'error') {
+        streamError = event.message
+        setStreamStatus(null)
+        return
+      }
+
+      const data = event.data
+      setStreamStatus(null)
+      setMessages((current) =>
+        current.map((item) =>
+          item.id === assistantId
+            ? {
+                ...item,
+                content: data.reply,
+                references: data.references,
+                tokens: data.usage.total_tokens,
+                costInr: data.usage.cost_inr,
+                streaming: false,
+              }
+            : item,
+        ),
+      )
+      logger.info('[AI CHAT] Stream completed.', {
         tools: data.tools_used,
         tokens: data.usage.total_tokens,
       })
+    }
+
+    try {
+      if (!accessToken) {
+        throw new Error(t('ai.chat.error'))
+      }
+      await aiApi.chatStream(
+        message,
+        history,
+        i18n.language,
+        accessToken,
+        handleEvent,
+        controller.signal,
+      )
+      if (streamError) {
+        throw new Error(streamError)
+      }
     } catch (requestError) {
-      logger.error('[AI CHAT] Request failed.', requestError)
-      setError(getErrorMessage(requestError, t('ai.chat.error')))
+      if (
+        !(requestError instanceof DOMException) ||
+        requestError.name !== 'AbortError'
+      ) {
+        logger.error('[AI CHAT] Request failed.', requestError)
+        setError(getErrorMessage(requestError, t('ai.chat.error')))
+      }
+      setMessages((current) =>
+        current
+          .filter(
+            (item) =>
+              item.id !== assistantId || item.content.trim().length > 0,
+          )
+          .map((item) =>
+            item.streaming ? { ...item, streaming: false } : item,
+          ),
+      )
     } finally {
+      abortRef.current = null
       setLoading(false)
+      setStreamStatus(null)
+      setMessages((current) =>
+        current.map((item) =>
+          item.streaming ? { ...item, streaming: false } : item,
+        ),
+      )
     }
   }
 
@@ -138,8 +235,11 @@ const AiChatDrawer = () => {
                 size="sm"
                 variant="ghost"
                 onClick={() => {
+                  abortRef.current?.abort()
                   setMessages([])
                   setError(null)
+                  setStreamStatus(null)
+                  setLoading(false)
                 }}
                 disabled={messages.length === 0 && !error}
                 aria-label={t('ai.chat.clear')}
@@ -186,9 +286,23 @@ const AiChatDrawer = () => {
                         : 'mr-2 rounded-lg border border-border bg-muted/50 px-3 py-2'
                     }
                   >
-                    <p className="whitespace-pre-wrap text-sm leading-6">
-                      {cleanAiText(message.content)}
-                    </p>
+                    {message.role === 'assistant' &&
+                    message.streaming &&
+                    !message.content ? (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        {streamStatus
+                          ? t(streamStatus.key, streamStatus.params)
+                          : t('ai.chat.thinking')}
+                      </div>
+                    ) : (
+                      <p className="whitespace-pre-wrap text-sm leading-6">
+                        {cleanAiText(message.content)}
+                        {message.role === 'assistant' && message.streaming && (
+                          <span className="ml-0.5 inline-block h-3.5 w-1 animate-pulse bg-current align-middle" />
+                        )}
+                      </p>
+                    )}
                     {message.role === 'assistant' &&
                       message.references &&
                       message.references.length > 0 && (
@@ -220,12 +334,6 @@ const AiChatDrawer = () => {
                     )}
                   </div>
                 ))}
-                {loading && (
-                  <div className="mr-2 flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    {t('ai.chat.thinking')}
-                  </div>
-                )}
               </div>
             )}
             {error && (

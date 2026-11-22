@@ -68,6 +68,33 @@ export interface ChatHistoryItem {
 const language = (value: string): 'en' | 'hi' =>
   value.startsWith('hi') ? 'hi' : 'en'
 
+const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api').replace(
+  /\/$/,
+  '',
+)
+
+export type ChatStreamEvent =
+  | { type: 'status'; key: string; params?: Record<string, string | number> }
+  | { type: 'token'; text: string }
+  | { type: 'reset' }
+  | { type: 'done'; data: ChatResult }
+  | { type: 'error'; message: string }
+
+const parseSseBlock = (block: string) => {
+  let eventName = 'message'
+  const dataLines: string[] = []
+  for (const rawLine of block.split('\n')) {
+    const line = rawLine.replace(/\r$/, '')
+    if (line.startsWith('event:')) {
+      eventName = line.slice(6).trim()
+    } else if (line.startsWith('data:')) {
+      dataLines.push(line.slice(5).trimStart())
+    }
+  }
+  if (!dataLines.length) return null
+  return { eventName, data: dataLines.join('\n') }
+}
+
 export const aiApi = {
   briefing: async (): Promise<ApiResponse<BriefingResult>> => {
     logger.api('POST', '/assistant/briefing/')
@@ -91,6 +118,75 @@ export const aiApi = {
       { timeout: 120000 },
     )
     return response.data
+  },
+
+  chatStream: async (
+    message: string,
+    history: ChatHistoryItem[],
+    locale: string,
+    accessToken: string,
+    onEvent: (event: ChatStreamEvent) => void,
+    signal?: AbortSignal,
+  ): Promise<void> => {
+    logger.api('POST', '/assistant/chat/stream/', { message })
+    const response = await fetch(`${apiBaseUrl}/assistant/chat/stream/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        message,
+        history,
+        language: language(locale),
+      }),
+      signal,
+    })
+
+    if (!response.ok) {
+      let errorMessage = 'Could not reach the AI assistant.'
+      try {
+        const body = (await response.json()) as { message?: string }
+        errorMessage = body.message || errorMessage
+      } catch {
+        errorMessage = response.statusText || errorMessage
+      }
+      throw new Error(errorMessage)
+    }
+    if (!response.body) {
+      throw new Error('The browser could not read the streaming response.')
+    }
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    const dispatch = (block: string) => {
+      const parsed = parseSseBlock(block)
+      if (!parsed) return
+      try {
+        const event = JSON.parse(parsed.data) as ChatStreamEvent
+        onEvent(event)
+      } catch (error) {
+        logger.warn('[AI CHAT] Ignored malformed stream event.', {
+          eventName: parsed.eventName,
+          error,
+        })
+      }
+    }
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+      let boundary = buffer.indexOf('\n\n')
+      while (boundary !== -1) {
+        dispatch(buffer.slice(0, boundary))
+        buffer = buffer.slice(boundary + 2)
+        boundary = buffer.indexOf('\n\n')
+      }
+    }
+    buffer += decoder.decode()
+    if (buffer.trim()) dispatch(buffer)
   },
 
   complaintCopilot: async (

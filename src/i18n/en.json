@@ -350,7 +350,19 @@
         "next": "What should I work on next?",
         "complaint": "Summarize complaint 100016"
       },
-      "references": "Related complaints"
+      "references": "Related complaints",
+      "status": {
+        "thinking": "Thinking...",
+        "complaint": "Looking up complaint #{{id}}...",
+        "search": "Searching complaints...",
+        "analytics": "Running the analytics query...",
+        "summary": "Checking the operations summary...",
+        "workload": "Checking engineer workload...",
+        "sla": "Checking SLA risks...",
+        "parts": "Checking the parts queue...",
+        "data": "Looking up complaint data...",
+        "review": "Reviewing the results..."
+      }
     },
     "copilot": {
       "title": "AI Copilot",
