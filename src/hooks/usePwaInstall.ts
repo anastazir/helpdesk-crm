@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
 
-interface BeforeInstallPromptEvent extends Event {
-  readonly platforms: string[]
-  readonly userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed'
-    platform: string
-  }>
-  prompt: () => Promise<void>
-}
+import {
+  consumeInstallPrompt,
+  getDeferredInstallPrompt,
+  subscribeInstallPrompt,
+  type BeforeInstallPromptEvent,
+} from '@/lib/pwaInstallPrompt'
+
+export type PwaInstallOutcome =
+  | 'accepted'
+  | 'dismissed'
+  | 'unavailable'
 
 const isStandalone = (): boolean => {
   const navigatorWithStandalone = navigator as Navigator & {
@@ -21,34 +24,38 @@ const isStandalone = (): boolean => {
 
 export const usePwaInstall = () => {
   const [deferredPrompt, setDeferredPrompt] =
-    useState<BeforeInstallPromptEvent | null>(null)
+    useState<BeforeInstallPromptEvent | null>(getDeferredInstallPrompt)
   const [isInstalled, setIsInstalled] = useState(isStandalone)
 
   useEffect(() => {
-    const handleBeforeInstall = (event: Event) => {
-      event.preventDefault()
-      setDeferredPrompt(event as BeforeInstallPromptEvent)
-    }
+    const unsubscribe = subscribeInstallPrompt(setDeferredPrompt)
     const handleInstalled = () => {
       setIsInstalled(true)
       setDeferredPrompt(null)
     }
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstall)
     window.addEventListener('appinstalled', handleInstalled)
-
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
+      unsubscribe()
       window.removeEventListener('appinstalled', handleInstalled)
     }
   }, [])
 
-  const install = async (): Promise<'accepted' | 'dismissed' | null> => {
-    if (!deferredPrompt) return null
-    await deferredPrompt.prompt()
-    const choice = await deferredPrompt.userChoice
-    setDeferredPrompt(null)
-    return choice.outcome
+  const install = async (): Promise<PwaInstallOutcome> => {
+    const prompt = deferredPrompt ?? getDeferredInstallPrompt()
+    if (!prompt) return 'unavailable'
+    try {
+      await prompt.prompt()
+      const choice = await prompt.userChoice
+      consumeInstallPrompt()
+      if (choice.outcome === 'accepted') {
+        setIsInstalled(true)
+      }
+      return choice.outcome
+    } catch {
+      consumeInstallPrompt()
+      return 'unavailable'
+    }
   }
 
   return {

@@ -147,6 +147,8 @@ const PreferencesPage = () => {
       const outcome = await install()
       if (outcome === 'accepted') {
         toast.success(t('preferences.installSuccess'))
+      } else if (outcome === 'unavailable') {
+        toast.info(t('preferences.installHint'))
       }
     } catch (installError) {
       logger.error('[PWA] Install prompt failed.', installError)
@@ -366,7 +368,8 @@ const PreferencesPage = () => {
             <Button
               type="button"
               onClick={() => void installApp()}
-              disabled={!isInstallable || installing}
+              disabled={installing}
+              title={!isInstallable ? t('preferences.installHint') : undefined}
             >
               <Download className="h-4 w-4" />
               {installing ? t('common.loading') : t('preferences.installButton')}

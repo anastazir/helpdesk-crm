@@ -58,7 +58,7 @@ const AiAnalyticsCard = () => {
   }
 
   return (
-    <Card className="mt-6 border-primary/20 bg-gradient-to-br from-primary/5 via-white to-transparent shadow-sm dark:via-slate-950">
+    <Card className="mt-6 min-w-0 border-primary/20 bg-gradient-to-br from-primary/5 via-white to-transparent shadow-sm dark:via-slate-950">
       <CardHeader>
         <div className="flex flex-wrap items-center gap-2">
           <CardTitle className="flex items-center gap-2 text-xl">
@@ -104,6 +104,7 @@ const AiAnalyticsCard = () => {
               type="button"
               size="sm"
               variant="outline"
+              className="h-auto max-w-full min-w-0 justify-start whitespace-normal text-left"
               onClick={() => void analyze(suggestion)}
               disabled={loading}
             >

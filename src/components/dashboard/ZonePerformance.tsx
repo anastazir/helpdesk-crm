@@ -45,7 +45,7 @@ const ZonePerformance = ({ zones, complaints }: ZonePerformanceProps) => {
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="min-w-0 w-full overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>

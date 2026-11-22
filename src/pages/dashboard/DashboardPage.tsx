@@ -283,8 +283,8 @@ const DashboardPage = () => {
 
       {aiEnabled && user?.role === 'admin' && <AiAnalyticsCard />}
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-3">
-        <Card className="border-border shadow-sm">
+      <div className="mt-6 grid min-w-0 gap-6 xl:grid-cols-3">
+        <Card className="min-w-0 border-border shadow-sm">
           <CardHeader>
             <CardTitle>{t('dashboard.statusDistribution')}</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -296,7 +296,7 @@ const DashboardPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-border shadow-sm xl:col-span-2">
+        <Card className="min-w-0 border-border shadow-sm xl:col-span-2">
           <CardHeader>
             <CardTitle>{t('dashboard.intakeTrend')}</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -309,8 +309,8 @@ const DashboardPage = () => {
         </Card>
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-3">
-        <Card className="border-border shadow-sm">
+      <div className="mt-6 grid min-w-0 gap-6 xl:grid-cols-3">
+        <Card className="min-w-0 border-border shadow-sm">
           <CardHeader>
             <CardTitle>{t('dashboard.aging')}</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -322,7 +322,7 @@ const DashboardPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-border shadow-sm">
+        <Card className="min-w-0 border-border shadow-sm">
           <CardHeader>
             <CardTitle>{t('dashboard.engineerWorkload')}</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -334,7 +334,7 @@ const DashboardPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-border shadow-sm">
+        <Card className="min-w-0 border-border shadow-sm">
           <CardHeader>
             <CardTitle>{t('dashboard.issueHotspots')}</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -347,8 +347,8 @@ const DashboardPage = () => {
         </Card>
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-2">
-        <Card className="border-border shadow-sm">
+      <div className="mt-6 grid min-w-0 gap-6 xl:grid-cols-2">
+        <Card className="min-w-0 border-border shadow-sm">
           <CardHeader>
             <CardTitle>{t('dashboard.slaAlerts')}</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -389,7 +389,7 @@ const DashboardPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-border shadow-sm">
+        <Card className="min-w-0 border-border shadow-sm">
           <CardHeader>
             <CardTitle>{t('dashboard.zonePerformance')}</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -422,7 +422,7 @@ const DashboardPage = () => {
       </div>
 
       {user?.role === 'admin' && (
-        <Card className="mt-6 border-border shadow-sm">
+        <Card className="mt-6 min-w-0 border-border shadow-sm">
           <CardHeader>
             <CardTitle>{t('dashboard.teamActivity')}</CardTitle>
             <p className="text-sm text-muted-foreground">

@@ -246,7 +246,8 @@ const FileUploadSection = ({
               type="file"
               multiple
               accept="image/jpeg,image/png,application/pdf"
-              className="hidden"
+              className="sr-only"
+              aria-label={t('complaint.chooseFiles')}
               onChange={(event) => handleFiles(event.target.files)}
             />
             <input
@@ -254,7 +255,8 @@ const FileUploadSection = ({
               type="file"
               accept="image/jpeg,image/png"
               capture="environment"
-              className="hidden"
+              className="sr-only"
+              aria-label={t('complaint.takePhoto')}
               onChange={(event) => handleFiles(event.target.files, true)}
             />
             <div className="flex flex-wrap gap-2">

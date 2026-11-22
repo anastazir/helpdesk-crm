@@ -45,17 +45,17 @@ const AppShell = () => {
   }, [dispatch])
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen w-full max-w-full overflow-hidden">
       <Sidebar />
       <MobileDrawer />
       <div
         className={cn(
-          'flex flex-1 flex-col overflow-hidden transition-[margin] duration-200',
+          'flex min-w-0 flex-1 flex-col overflow-hidden transition-[margin] duration-200',
           collapsed ? 'md:ml-16' : 'md:ml-60',
         )}
       >
         <Header />
-        <main className="flex-1 overflow-y-auto bg-canvas p-4 dark:bg-slate-950 md:p-6">
+        <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-canvas p-4 dark:bg-slate-950 md:p-6">
           <Outlet />
         </main>
       </div>
