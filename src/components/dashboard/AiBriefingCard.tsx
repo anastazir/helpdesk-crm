@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getErrorMessage } from '@/utils/errors'
-import { formatDate } from '@/utils/formatters'
+import { cleanAiText, formatDate } from '@/utils/formatters'
 import { logger } from '@/utils/logger'
 
 const AiBriefingCard = () => {
@@ -81,7 +81,7 @@ const AiBriefingCard = () => {
               aria-live="polite"
               data-testid="ai-briefing-result"
             >
-              {result.briefing}
+              {cleanAiText(result.briefing)}
             </div>
             <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
               <span>{t('ai.generated', { time: formatDate(result.generated_at) })}</span>

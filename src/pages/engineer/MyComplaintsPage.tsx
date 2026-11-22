@@ -10,6 +10,7 @@ import ErrorBanner from '@/components/common/ErrorBanner'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import PageHeader from '@/components/common/PageHeader'
 import StatCard from '@/components/common/StatCard'
+import AiDayPlanCard from '@/components/engineer/AiDayPlanCard'
 import SLATimer from '@/components/complaints/SLATimer'
 import StatusBadge from '@/components/complaints/StatusBadge'
 import StatusTabBar from '@/components/complaints/StatusTabBar'
@@ -149,6 +150,8 @@ const MyComplaintsPage = () => {
           onChange={changeStatuses}
         />
       </div>
+
+      <AiDayPlanCard />
 
       {filtered.length === 0 ? (
         <EmptyState title={t('engineer.noComplaints')} />

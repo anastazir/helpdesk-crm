@@ -1,4 +1,4 @@
-import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react'
+import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 
@@ -17,7 +17,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useLogout } from '@/hooks/useLogout'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { setLanguage } from '@/store/slices/preferencesSlice'
-import { toggleSidebar, toggleSidebarCollapsed } from '@/store/slices/uiSlice'
+import { toggleSidebar, toggleSidebarCollapsed, setAiChatOpen } from '@/store/slices/uiSlice'
 import type { LanguagePreference } from '@/store/slices/preferencesSlice'
 
 const Header = () => {
@@ -129,6 +129,16 @@ const Header = () => {
       </div>
 
       <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="hidden md:inline-flex"
+          onClick={() => dispatch(setAiChatOpen(true))}
+        >
+          <Sparkles className="h-4 w-4" />
+          {t('ai.chat.open')}
+        </Button>
         <div className="flex items-center rounded-lg border border-border bg-muted p-0.5">
           <button
             type="button"

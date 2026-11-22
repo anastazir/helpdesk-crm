@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { complaintsApi } from '@/api/complaints.api'
 import { issuesApi } from '@/api/issues.api'
 import { zonesApi } from '@/api/zones.api'
+import AiTriageCard from '@/components/complaints/AiTriageCard'
 import ErrorBanner from '@/components/common/ErrorBanner'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import PageHeader from '@/components/common/PageHeader'
@@ -375,6 +376,16 @@ const NewComplaintPage = () => {
             )}
           </CardContent>
         </Card>
+
+        <AiTriageCard
+          issueIds={selectedIssues}
+          othersDescription={watch('others_description')}
+          department={watch('department')}
+          designation={watch('designation')}
+          onApply={(issueIds) =>
+            setValue('issue_ids', issueIds, { shouldValidate: true })
+          }
+        />
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button type="button" variant="outline" asChild>

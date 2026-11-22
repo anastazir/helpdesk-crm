@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 
 import { cn } from '@/lib/utils'
+import AiChatDrawer from '@/components/assistant/AiChatDrawer'
 import { useAppSelector } from '@/store/hooks'
 
 import Header from './Header'
@@ -25,6 +26,7 @@ const AppShell = () => {
           <Outlet />
         </main>
       </div>
+      <AiChatDrawer />
     </div>
   )
 }

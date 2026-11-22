@@ -299,7 +299,70 @@
     "disclaimer": "AI-generated. Verify operational decisions against the complaint records.",
     "generated": "Generated {{time}}",
     "metadata": "{{tokens}} tokens · {{cost}}",
-    "costUnavailable": "cost unavailable"
+    "costUnavailable": "cost unavailable",
+    "chat": {
+      "open": "Ask AI",
+      "title": "Ask AI",
+      "subtitle": "Read-only answers from live complaint data.",
+      "empty": "Ask about the queue, SLA risks, parts, engineers, or a specific complaint.",
+      "placeholder": "Ask about complaints...",
+      "send": "Send",
+      "clear": "Clear",
+      "thinking": "Thinking...",
+      "error": "The assistant could not answer.",
+      "readOnly": "Read-only. It cannot change complaints.",
+      "suggested": "Try asking",
+      "prompts": {
+        "today": "Summarize today's operations",
+        "sla": "Which complaints are at SLA risk?",
+        "parts": "What is waiting for parts?",
+        "unassigned": "Show unassigned complaints",
+        "plan": "Plan my day",
+        "oldest": "What is my oldest complaint?",
+        "next": "What should I work on next?",
+        "complaint": "Summarize complaint 100016"
+      },
+      "references": "Related complaints"
+    },
+    "copilot": {
+      "title": "AI Copilot",
+      "subtitle": "Summarize the complaint or prepare the next step.",
+      "summary": "Summary",
+      "nextAction": "Next step",
+      "draft": "Draft comment",
+      "draftHint": "Creates a draft only; nothing is posted automatically.",
+      "copy": "Copy draft",
+      "copied": "Copied to clipboard.",
+      "empty": "Choose an AI action for this complaint.",
+      "error": "Could not generate the copilot response.",
+      "disclaimer": "AI-generated. Review before using."
+    },
+    "plan": {
+      "title": "AI Day Plan",
+      "subtitle": "Prioritize your assigned complaints.",
+      "generate": "Plan my day",
+      "generating": "Building plan...",
+      "empty": "Generate a prioritized plan from your assigned complaints.",
+      "error": "Could not generate your plan.",
+      "disclaimer": "AI-generated. Verify with the complaint records."
+    },
+    "triage": {
+      "title": "AI Triage",
+      "subtitle": "Suggest issue types and urgency from the reported problem.",
+      "button": "Suggest triage",
+      "generating": "Checking...",
+      "apply": "Apply suggested issues",
+      "applied": "Suggested issues applied.",
+      "empty": "Select at least one issue or describe the problem to use AI triage.",
+      "error": "Could not get triage suggestions.",
+      "urgency": {
+        "normal": "Normal",
+        "soon": "Soon",
+        "urgent": "Urgent"
+      },
+      "reason": "Why",
+      "nextStep": "Suggested next step"
+    }
   },
   "dashboard": {
     "title": "Dashboard",

@@ -12,6 +12,7 @@ import { complaintsApi } from '@/api/complaints.api'
 import { uploadsApi } from '@/api/uploads.api'
 import { usersApi } from '@/api/users.api'
 import AssignEngineerModal from '@/components/complaints/AssignEngineerModal'
+import AiComplaintCopilot from '@/components/complaints/AiComplaintCopilot'
 import CommentSection from '@/components/complaints/CommentSection'
 import FileUploadSection from '@/components/complaints/FileUploadSection'
 import JobNoteCard from '@/components/complaints/JobNoteCard'
@@ -632,6 +633,11 @@ const ComplaintDetailPage = () => {
               </CardContent>
             </Card>
           )}
+
+          <AiComplaintCopilot
+            complaintId={complaint.id}
+            canDraft={canComment}
+          />
 
           <Card className="border-border shadow-sm" id="job-note-card">
             <CardHeader>

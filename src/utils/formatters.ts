@@ -60,3 +60,10 @@ export const toMediaUrl = (relativePath: string): string => {
   const path = relativePath.startsWith('/') ? relativePath : `/${relativePath}`
   return `${host}${path}`
 }
+
+export const cleanAiText = (text: string): string =>
+  text
+    .replace(/\*\*/g, '')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/`{1,3}/g, '')
+    .trim()

@@ -3,11 +3,13 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 export interface UIState {
   sidebarOpen: boolean
   sidebarCollapsed: boolean
+  aiChatOpen: boolean
 }
 
 const initialState: UIState = {
   sidebarOpen: false,
   sidebarCollapsed: false,
+  aiChatOpen: false,
 }
 
 const uiSlice = createSlice({
@@ -23,9 +25,16 @@ const uiSlice = createSlice({
     toggleSidebarCollapsed: (state) => {
       state.sidebarCollapsed = !state.sidebarCollapsed
     },
+    setAiChatOpen: (state, action: PayloadAction<boolean>) => {
+      state.aiChatOpen = action.payload
+    },
   },
 })
 
-export const { toggleSidebar, setSidebarOpen, toggleSidebarCollapsed } =
-  uiSlice.actions
+export const {
+  toggleSidebar,
+  setSidebarOpen,
+  toggleSidebarCollapsed,
+  setAiChatOpen,
+} = uiSlice.actions
 export default uiSlice.reducer
