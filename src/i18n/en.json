@@ -288,6 +288,19 @@
     "dateFrom": "Date from",
     "dateTo": "Date to"
   },
+  "ai": {
+    "title": "AI Daily Briefing",
+    "poc": "POC",
+    "subtitle": "A quick narrative summary of today's complaint activity.",
+    "generate": "Generate briefing",
+    "generating": "Generating...",
+    "empty": "Generate a briefing from today's live complaint data.",
+    "error": "Could not generate the briefing.",
+    "disclaimer": "AI-generated. Verify operational decisions against the complaint records.",
+    "generated": "Generated {{time}}",
+    "metadata": "{{tokens}} tokens · {{cost}}",
+    "costUnavailable": "cost unavailable"
+  },
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "Overview of complaint activity and SLA health.",

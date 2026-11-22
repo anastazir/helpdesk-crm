@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom'
 import { complaintsApi } from '@/api/complaints.api'
 import { usersApi } from '@/api/users.api'
 import { zonesApi } from '@/api/zones.api'
+import AiBriefingCard from '@/components/dashboard/AiBriefingCard'
 import AgingBuckets from '@/components/dashboard/AgingBuckets'
 import EngineerWorkload from '@/components/dashboard/EngineerWorkload'
 import IssueHotspots from '@/components/dashboard/IssueHotspots'
@@ -277,6 +278,8 @@ const DashboardPage = () => {
           iconClassName="bg-slate-100 text-slate-600 dark:bg-slate-800"
         />
       </div>
+
+      <AiBriefingCard />
 
       <div className="mt-6 grid gap-6 xl:grid-cols-3">
         <Card className="border-border shadow-sm">
