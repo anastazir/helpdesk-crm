@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { CheckCircle2, Download } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -22,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useAuth } from '@/hooks/useAuth'
+import { usePwaInstall } from '@/hooks/usePwaInstall'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
   setColorTheme,
@@ -36,6 +38,8 @@ import {
   type ThemePreference,
 } from '@/store/slices/preferencesSlice'
 import { cn } from '@/lib/utils'
+import { getErrorMessage } from '@/utils/errors'
+import { logger } from '@/utils/logger'
 
 interface PreferencesFormValues {
   theme: ThemePreference
@@ -59,6 +63,8 @@ const PreferencesPage = () => {
   const dispatch = useAppDispatch()
   const { user } = useAuth()
   const preferences = useAppSelector((state) => state.preferences)
+  const { isInstallable, isInstalled, install } = usePwaInstall()
+  const [installing, setInstalling] = useState(false)
 
   const schema = useMemo(
     () =>
@@ -132,6 +138,21 @@ const PreferencesPage = () => {
     dispatch(setFontStyle(values.fontStyle))
     dispatch(setLanguage(values.language))
     toast.success(t('preferences.saved'))
+  }
+
+  const installApp = async () => {
+    setInstalling(true)
+    try {
+      const outcome = await install()
+      if (outcome === 'accepted') {
+        toast.success(t('preferences.installSuccess'))
+      }
+    } catch (installError) {
+      logger.error('[PWA] Install prompt failed.', installError)
+      toast.error(getErrorMessage(installError, t('errors.generic')))
+    } finally {
+      setInstalling(false)
+    }
   }
 
   if (!user) return null
@@ -324,6 +345,37 @@ const PreferencesPage = () => {
 
         <Button type="submit">{t('preferences.savePreferences')}</Button>
       </form>
+
+      <Card className="mt-6 border-border shadow-sm">
+        <CardHeader>
+          <CardTitle>{t('preferences.installApp')}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            {t('preferences.installAppDescription')}
+          </p>
+          {isInstalled ? (
+            <p className="flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-400">
+              <CheckCircle2 className="h-4 w-4" />
+              {t('preferences.installInstalled')}
+            </p>
+          ) : (
+            <Button
+              type="button"
+              onClick={() => void installApp()}
+              disabled={!isInstallable || installing}
+            >
+              <Download className="h-4 w-4" />
+              {installing ? t('common.loading') : t('preferences.installButton')}
+            </Button>
+          )}
+          {!isInstalled && (
+            <p className="text-xs text-muted-foreground">
+              {t('preferences.installHint')}
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       <Card className="mt-6 border-border bg-slate-900 text-slate-100 shadow-sm">
         <CardHeader>

@@ -76,9 +76,11 @@ export const SidebarContent = ({
           collapsed ? 'justify-center px-2' : 'gap-3 px-4',
         )}
       >
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-primary text-sm font-bold text-primary-foreground">
-          {t('app.logoShort')}
-        </div>
+        <img
+          src="/brand-logo.png"
+          alt={t('app.name')}
+          className="h-9 w-9 shrink-0 rounded object-cover ring-1 ring-slate-700"
+        />
         {!collapsed && (
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-white">{t('app.name')}</p>

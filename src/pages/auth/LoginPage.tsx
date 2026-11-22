@@ -98,9 +98,11 @@ const LoginPage = () => {
       <div className="hidden flex-col justify-between bg-sidebar p-10 text-white lg:flex">
         <div>
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary text-sm font-bold">
-              {t('app.logoShort')}
-            </div>
+            <img
+              src="/brand-logo.png"
+              alt={t('app.name')}
+              className="h-11 w-11 rounded-lg object-cover ring-1 ring-slate-700"
+            />
             <div>
               <p className="text-lg font-semibold">{t('app.name')}</p>
               <p className="text-sm text-slate-400">{t('disclaimer.internal')}</p>
