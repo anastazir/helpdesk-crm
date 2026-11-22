@@ -53,6 +53,7 @@ const AiChatDrawer = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [streamStatus, setStreamStatus] = useState<StreamStatus | null>(null)
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const endRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
   const setOpen = (next: boolean) => dispatch(setAiChatOpen(next))
@@ -69,6 +70,19 @@ const AiChatDrawer = () => {
       endRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
   }, [messages, loading, streamStatus, open])
+
+  useEffect(() => {
+    if (!loading) {
+      setElapsedSeconds(0)
+      return
+    }
+    setElapsedSeconds(0)
+    const timer = window.setInterval(
+      () => setElapsedSeconds((current) => current + 1),
+      1000,
+    )
+    return () => window.clearInterval(timer)
+  }, [loading])
 
   const send = async (text: string) => {
     const message = text.trim()
@@ -291,9 +305,16 @@ const AiChatDrawer = () => {
                     !message.content ? (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        {streamStatus
-                          ? t(streamStatus.key, streamStatus.params)
-                          : t('ai.chat.thinking')}
+                        <span>
+                          {streamStatus
+                            ? t(streamStatus.key, streamStatus.params)
+                            : t('ai.chat.thinking')}
+                        </span>
+                        {elapsedSeconds >= 3 && (
+                          <span className="ml-auto text-[11px] tabular-nums">
+                            {elapsedSeconds}s
+                          </span>
+                        )}
                       </div>
                     ) : (
                       <p className="whitespace-pre-wrap text-sm leading-6">
