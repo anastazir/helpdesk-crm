@@ -3,7 +3,6 @@ import { CalendarClock, Loader2, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { aiApi, type EngineerPlanResult } from '@/api/ai.api'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getErrorMessage } from '@/utils/errors'
@@ -46,9 +45,6 @@ const AiDayPlanCard = () => {
               <CalendarClock className="h-5 w-5 text-primary" />
               {t('ai.plan.title')}
             </CardTitle>
-            <Badge variant="secondary" className="text-[10px] uppercase">
-              {t('ai.poc')}
-            </Badge>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {t('ai.plan.subtitle')}

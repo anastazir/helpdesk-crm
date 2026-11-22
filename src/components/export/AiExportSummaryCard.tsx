@@ -3,7 +3,6 @@ import { Loader2, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { assistantApi, type ExportSummaryResult } from '@/api/ai.api'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { ExportFilters } from '@/types/export.types'
@@ -65,9 +64,6 @@ const AiExportSummaryCard = ({
               <Sparkles className="h-5 w-5 text-primary" />
               {t('ai.export.title')}
             </CardTitle>
-            <Badge variant="secondary" className="text-[10px] uppercase">
-              {t('ai.poc')}
-            </Badge>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {t('ai.export.subtitle')}

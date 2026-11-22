@@ -3,7 +3,6 @@ import { Loader2, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { aiApi, type BriefingResult } from '@/api/ai.api'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getErrorMessage } from '@/utils/errors'
@@ -48,9 +47,6 @@ const AiBriefingCard = () => {
               <Sparkles className="h-5 w-5 text-primary" />
               {t('ai.title')}
             </CardTitle>
-            <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">
-              {t('ai.poc')}
-            </Badge>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">{t('ai.subtitle')}</p>
         </div>

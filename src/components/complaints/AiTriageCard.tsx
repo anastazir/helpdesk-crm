@@ -88,9 +88,6 @@ const AiTriageCard = ({
               <Wand2 className="h-5 w-5 text-primary" />
               {t('ai.triage.title')}
             </CardTitle>
-            <Badge variant="secondary" className="text-[10px] uppercase">
-              {t('ai.poc')}
-            </Badge>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {t('ai.triage.subtitle')}

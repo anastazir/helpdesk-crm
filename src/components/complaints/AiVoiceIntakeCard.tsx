@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { assistantApi, type AutofillResult } from '@/api/ai.api'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
@@ -71,9 +70,6 @@ const AiVoiceIntakeCard = ({ onApply }: AiVoiceIntakeCardProps) => {
               <Sparkles className="h-5 w-5 text-primary" />
               {t('ai.autofill.title')}
             </CardTitle>
-            <Badge variant="secondary" className="text-[10px] uppercase">
-              {t('ai.poc')}
-            </Badge>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {t('ai.autofill.subtitle')}

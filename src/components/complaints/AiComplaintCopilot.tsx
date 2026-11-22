@@ -11,7 +11,6 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { aiApi, type CopilotResult } from '@/api/ai.api'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getErrorMessage } from '@/utils/errors'
@@ -76,9 +75,6 @@ const AiComplaintCopilot = ({
             <Sparkles className="h-5 w-5 text-primary" />
             {t('ai.copilot.title')}
           </CardTitle>
-          <Badge variant="secondary" className="text-[10px] uppercase">
-            {t('ai.poc')}
-          </Badge>
         </div>
         <p className="text-sm text-muted-foreground">
           {t('ai.copilot.subtitle')}

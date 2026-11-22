@@ -8,7 +8,6 @@ import SpeechButton from '@/components/common/SpeechButton'
 import { useAuth } from '@/hooks/useAuth'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { setAiChatOpen } from '@/store/slices/uiSlice'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -129,9 +128,6 @@ const AiChatDrawer = () => {
                 <SheetTitle className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-primary" />
                   {t('ai.chat.title')}
-                  <Badge variant="secondary" className="text-[10px] uppercase">
-                    {t('ai.poc')}
-                  </Badge>
                 </SheetTitle>
                 <SheetDescription className="mt-1">
                   {t('ai.chat.subtitle')}

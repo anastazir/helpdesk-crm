@@ -215,3 +215,41 @@ export const assistantApi = {
     return response.data
   },
 }
+
+
+export interface AnalyticsChartSpec {
+  type: 'table' | 'bar' | 'line' | 'area' | 'donut' | 'kpi'
+  x: string | null
+  y: string | null
+  series: string | null
+}
+
+export interface AnalyticsResult extends AiResultMeta {
+  question: string
+  sql: string
+  columns: string[]
+  rows: Record<string, unknown>[]
+  row_count: number
+  truncated: boolean
+  dialect: string
+  title: string
+  response_type: 'table' | 'chart'
+  chart: AnalyticsChartSpec
+  explanation: string
+  answer: string
+}
+
+export const dashboardAnalyticsApi = {
+  analyze: async (
+    question: string,
+    locale: string,
+  ): Promise<ApiResponse<AnalyticsResult>> => {
+    logger.api('POST', '/assistant/analytics/', { question })
+    const response = await api.post<ApiResponse<AnalyticsResult>>(
+      '/assistant/analytics/',
+      { question, language: language(locale) },
+      { timeout: 120000 },
+    )
+    return response.data
+  },
+}

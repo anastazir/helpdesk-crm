@@ -51,6 +51,7 @@ const FEATURES = [
   'triage',
   'export_summary',
   'complaint_autofill',
+  'analytics',
 ]
 
 const AiLogsPage = () => {

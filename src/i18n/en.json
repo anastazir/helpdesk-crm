@@ -427,8 +427,23 @@
         "engineer_plan": "Engineer Day Plan",
         "triage": "AI Triage",
         "export_summary": "Export Summary",
-        "complaint_autofill": "Complaint Autofill"
+        "complaint_autofill": "Complaint Autofill",
+        "analytics": "AI Analytics"
       }
+    },
+    "analytics": {
+      "title": "AI Analytics",
+      "subtitle": "Ask for an ad-hoc analysis and render a chart from live, read-only complaint data.",
+      "placeholder": "Ask a question about the complaint data...",
+      "run": "Run analysis",
+      "running": "Analyzing...",
+      "empty": "Ask a question to generate an analysis. The standard dashboard stays unchanged.",
+      "emptyResult": "No rows matched this question.",
+      "error": "Could not run this analysis.",
+      "rows": "{{count}} rows{{truncated}}",
+      "truncated": " (truncated)",
+      "showSql": "Show SQL",
+      "disclaimer": "AI-generated. Read-only analytics views exclude caller identity and personal data. Verify critical decisions."
     }
   },
   "dashboard": {

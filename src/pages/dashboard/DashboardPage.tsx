@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom'
 import { complaintsApi } from '@/api/complaints.api'
 import { usersApi } from '@/api/users.api'
 import { zonesApi } from '@/api/zones.api'
+import AiAnalyticsCard from '@/components/dashboard/AiAnalyticsCard'
 import AiBriefingCard from '@/components/dashboard/AiBriefingCard'
 import AgingBuckets from '@/components/dashboard/AgingBuckets'
 import EngineerWorkload from '@/components/dashboard/EngineerWorkload'
@@ -280,6 +281,7 @@ const DashboardPage = () => {
       </div>
 
       <AiBriefingCard />
+      {user?.role === 'admin' && <AiAnalyticsCard />}
 
       <div className="mt-6 grid gap-6 xl:grid-cols-3">
         <Card className="border-border shadow-sm">
