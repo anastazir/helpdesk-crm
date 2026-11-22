@@ -25,6 +25,8 @@ import { z } from 'zod'
 
 import { exportApi } from '@/api/export.api'
 import { usersApi } from '@/api/users.api'
+import { useAuth } from '@/hooks/useAuth'
+import AiExportSummaryCard from '@/components/export/AiExportSummaryCard'
 import { zonesApi } from '@/api/zones.api'
 import ErrorBanner from '@/components/common/ErrorBanner'
 import MultiSelectFilter from '@/components/common/MultiSelectFilter'
@@ -134,6 +136,7 @@ const SortableColumnRow = ({
 
 const ExportPage = () => {
   const { t } = useTranslation()
+  const { user } = useAuth()
   const [zones, setZones] = useState<Zone[]>([])
   const [engineers, setEngineers] = useState<EngineerUser[]>([])
   const [orderedColumns, setOrderedColumns] = useState<ExportColumnKey[]>(ALL_COLUMNS)
@@ -455,6 +458,13 @@ const ExportPage = () => {
           </div>
       </div>
 
+        {user?.role === 'admin' && (
+          <AiExportSummaryCard
+            filters={buildFilters(values)}
+            deduplicate={values.deduplicate}
+          />
+        )}
+
         <Card className="border-border shadow-sm">
             <CardHeader className="flex-row items-center justify-between space-y-0">
               <div>
@@ -579,6 +589,7 @@ const ExportPage = () => {
               </div>
             </CardContent>
           </Card>
+
     </div>
   )
 }

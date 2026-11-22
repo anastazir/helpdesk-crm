@@ -67,3 +67,10 @@ export const cleanAiText = (text: string): string =>
     .replace(/^#{1,6}\s+/gm, '')
     .replace(/`{1,3}/g, '')
     .trim()
+
+
+export const formatInrCost = (value: number | null | undefined): string => {
+  if (value === null || value === undefined) return '₹0.00'
+  const digits = Math.abs(value) < 1 ? 4 : 2
+  return `₹${value.toFixed(digits)}`
+}

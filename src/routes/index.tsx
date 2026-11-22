@@ -9,6 +9,7 @@ import NewComplaintPage from '@/pages/complaints/NewComplaintPage'
 import DashboardPage from '@/pages/dashboard/DashboardPage'
 import AllComplaintsPage from '@/pages/engineer/AllComplaintsPage'
 import MyComplaintsPage from '@/pages/engineer/MyComplaintsPage'
+import AiLogsPage from '@/pages/ai-logs/AiLogsPage'
 import ExportPage from '@/pages/export/ExportPage'
 import PreferencesPage from '@/pages/settings/PreferencesPage'
 import UsersPage from '@/pages/users/UsersPage'
@@ -47,6 +48,7 @@ const AppRoutes = () => (
         <Route element={<RoleRoute allowedRoles={['admin']} />}>
           <Route path="/users" element={<UsersPage />} />
           <Route path="/zones" element={<ZonesPage />} />
+          <Route path="/ai-logs" element={<AiLogsPage />} />
         </Route>
 
         <Route element={<RoleRoute allowedRoles={['engineer']} />}>

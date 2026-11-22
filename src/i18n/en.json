@@ -18,7 +18,8 @@
     "export": "Export",
     "settings": "Settings",
     "myComplaints": "My Complaints",
-    "allComplaints": "All Complaints"
+    "allComplaints": "All Complaints",
+    "aiLogs": "AI Logs"
   },
   "header": {
     "openMenu": "Open menu",
@@ -362,6 +363,72 @@
       },
       "reason": "Why",
       "nextStep": "Suggested next step"
+    },
+    "export": {
+      "title": "AI Export Summary",
+      "subtitle": "Admin-only narrative summary of the current filtered export.",
+      "generate": "Summarize export",
+      "generating": "Summarizing...",
+      "empty": "Generate an admin-only narrative from the current export filters.",
+      "error": "Could not summarize this export.",
+      "disclaimer": "AI-generated. Verify figures against the export preview."
+    },
+    "autofill": {
+      "title": "Voice intake",
+      "subtitle": "Dictate the call, then let AI fill the complaint form.",
+      "placeholder": "Click the microphone and describe the complaint...",
+      "autofill": "Fill form with AI",
+      "autofilling": "Reading transcript...",
+      "filled": "Form filled. Review before saving.",
+      "empty": "Dictate or type the complaint details first.",
+      "error": "Could not extract form details.",
+      "hint": "Only explicit details are filled. Review every field before submitting."
+    },
+    "logs": {
+      "title": "AI Activity Logs",
+      "subtitle": "Admin-only audit of AI requests, responses, tools, and cost.",
+      "totalRequests": "Total requests",
+      "todayRequests": "Requests today",
+      "totalTokens": "Total tokens",
+      "totalCost": "Total cost",
+      "todayCost": "Cost today",
+      "errors": "Errors",
+      "summary": "AI usage summary",
+      "filters": "Filters",
+      "allFeatures": "All features",
+      "allStatuses": "All statuses",
+      "searchPlaceholder": "Search user, request, response...",
+      "dateFrom": "From",
+      "dateTo": "To",
+      "empty": "No AI activity found.",
+      "loadFailed": "Could not load AI logs.",
+      "request": "Request",
+      "response": "Response",
+      "metadata": "Details",
+      "tools": "Tools used",
+      "error": "Error",
+      "feature": "Feature",
+      "status": "Status",
+      "user": "User",
+      "time": "Time",
+      "tokens": "Tokens",
+      "cost": "Cost",
+      "latency": "Latency",
+      "success": "Success",
+      "failure": "Failure",
+      "view": "View log",
+      "requestDetails": "Request details",
+      "responseDetails": "Response details",
+      "featureBreakdown": "By feature",
+      "features": {
+        "briefing": "Daily Briefing",
+        "chat": "AI Chat",
+        "complaint_copilot": "Complaint Copilot",
+        "engineer_plan": "Engineer Day Plan",
+        "triage": "AI Triage",
+        "export_summary": "Export Summary",
+        "complaint_autofill": "Complaint Autofill"
+      }
     }
   },
   "dashboard": {
@@ -660,5 +727,10 @@
   },
   "disclaimer": {
     "internal": "Internal use only"
+  },
+  "speech": {
+    "start": "Start voice input",
+    "stop": "Stop voice input",
+    "unsupported": "Voice input is not supported in this browser."
   }
 }

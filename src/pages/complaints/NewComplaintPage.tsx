@@ -7,9 +7,12 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { complaintsApi } from '@/api/complaints.api'
+import type { AutofillResult } from '@/api/ai.api'
+import AiVoiceIntakeCard from '@/components/complaints/AiVoiceIntakeCard'
 import { issuesApi } from '@/api/issues.api'
 import { zonesApi } from '@/api/zones.api'
 import AiTriageCard from '@/components/complaints/AiTriageCard'
+import SpeechButton from '@/components/common/SpeechButton'
 import ErrorBanner from '@/components/common/ErrorBanner'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import PageHeader from '@/components/common/PageHeader'
@@ -56,7 +59,7 @@ const createSchema = (t: (key: string) => string) =>
 type ComplaintFormValues = z.infer<ReturnType<typeof createSchema>>
 
 const NewComplaintPage = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [zones, setZones] = useState<Zone[]>([])
   const [issues, setIssues] = useState<IssueType[]>([])
@@ -180,6 +183,40 @@ const NewComplaintPage = () => {
     return <LoadingSpinner />
   }
 
+  const applyAutofill = (result: AutofillResult) => {
+    const fields = result.fields
+    const values: Partial<ComplaintFormValues> = {}
+    const stringFields: Array<keyof ComplaintFormValues> = [
+      'caller_name',
+      'caller_phone',
+      'department',
+      'designation',
+      'address',
+      'pincode',
+      'cpu_serial',
+      'monitor_serial',
+    ]
+    for (const key of stringFields) {
+      const value = fields[key as keyof typeof fields]
+      if (typeof value === 'string' && value.trim()) {
+        ;(values as Record<string, unknown>)[key] = value.trim()
+      }
+    }
+    if (fields.others_description?.trim()) {
+      values.others_description = fields.others_description.trim()
+    }
+    if (result.zone_id) values.zone_id = String(result.zone_id)
+    if (result.suggested_issue_ids.length > 0) {
+      values.issue_ids = result.suggested_issue_ids
+    }
+    for (const [key, value] of Object.entries(values)) {
+      setValue(key as keyof ComplaintFormValues, value as never, {
+        shouldDirty: true,
+        shouldValidate: true,
+      })
+    }
+  }
+
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader
@@ -189,6 +226,8 @@ const NewComplaintPage = () => {
 
       {optionsError && <ErrorBanner message={optionsError} onRetry={() => void loadOptions()} />}
       {submitError && <ErrorBanner message={submitError} />}
+
+      <AiVoiceIntakeCard onApply={applyAutofill} />
 
       <form onSubmit={handleSubmit(submit)} className="space-y-5">
         <Card className="border-border shadow-sm">
@@ -274,7 +313,17 @@ const NewComplaintPage = () => {
                 {t('complaint.address')}{' '}
                 <span className="text-muted-foreground">({t('common.optional')})</span>
               </Label>
-              <Textarea id="address" rows={2} {...register('address')} />
+              <div className="flex items-start gap-2">
+                <Textarea id="address" rows={2} {...register('address')} />
+                <SpeechButton
+                  onTranscript={(text) =>
+                    setValue('address', `${watch('address')} ${text}`.trim(), {
+                      shouldDirty: true,
+                    })
+                  }
+                  language={i18n.language.startsWith('hi') ? 'hi-IN' : 'en-IN'}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -362,11 +411,23 @@ const NewComplaintPage = () => {
                 <Label htmlFor="others-description">
                   {t('complaint.othersDescription')} <span className="text-red-500">*</span>
                 </Label>
-                <Textarea
-                  id="others-description"
-                  rows={3}
-                  {...register('others_description')}
-                />
+                <div className="flex items-start gap-2">
+                  <Textarea
+                    id="others-description"
+                    rows={3}
+                    {...register('others_description')}
+                  />
+                  <SpeechButton
+                    onTranscript={(text) =>
+                      setValue(
+                        'others_description',
+                        `${watch('others_description')} ${text}`.trim(),
+                        { shouldDirty: true },
+                      )
+                    }
+                    language={i18n.language.startsWith('hi') ? 'hi-IN' : 'en-IN'}
+                  />
+                </div>
                 {errors.others_description && (
                   <p className="text-sm text-red-600">
                     {errors.others_description.message}

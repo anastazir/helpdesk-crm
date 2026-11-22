@@ -31,7 +31,7 @@ const StatusDonut = ({ counts }: StatusDonutProps) => {
       : 'hsl(var(--muted))'
 
   return (
-    <div className="flex flex-col items-center gap-6 lg:flex-row">
+    <div className="flex w-full min-w-0 flex-col items-center gap-5 overflow-hidden">
       <div
         className="relative h-44 w-44 shrink-0 rounded-full"
         style={{ background }}
@@ -46,7 +46,7 @@ const StatusDonut = ({ counts }: StatusDonutProps) => {
         </div>
       </div>
 
-      <ul className="w-full flex-1 space-y-2">
+      <ul className="w-full min-w-0 space-y-2">
         {segments.map((segment) => (
           <li
             key={segment.status}

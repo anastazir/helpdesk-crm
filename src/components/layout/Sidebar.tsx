@@ -1,4 +1,5 @@
 import {
+  Bot,
   ClipboardCheck,
   ClipboardList,
   Download,
@@ -37,6 +38,7 @@ const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
     { to: '/users', labelKey: 'nav.users', icon: Users },
     { to: '/zones', labelKey: 'nav.zones', icon: MapPin },
     { to: '/export', labelKey: 'nav.export', icon: Download },
+    { to: '/ai-logs', labelKey: 'nav.aiLogs', icon: Bot },
     { to: '/settings', labelKey: 'nav.settings', icon: Settings },
   ],
   helpdesk: [

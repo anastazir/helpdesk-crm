@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getErrorMessage } from '@/utils/errors'
-import { cleanAiText, formatDate } from '@/utils/formatters'
+import { cleanAiText, formatDate, formatInrCost } from '@/utils/formatters'
 import { logger } from '@/utils/logger'
 
 const AiBriefingCard = () => {
@@ -16,11 +16,7 @@ const AiBriefingCard = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const cost = result?.usage.cost
-  const costLabel =
-    cost === null || cost === undefined
-      ? t('ai.costUnavailable')
-      : `$${cost.toFixed(6)}`
+  const costLabel = formatInrCost(result?.usage.cost_inr)
 
   const generate = async () => {
     setLoading(true)

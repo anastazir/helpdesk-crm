@@ -7,6 +7,7 @@ export interface BriefingUsage {
   completion_tokens: number
   total_tokens: number
   cost: number | null
+  cost_inr?: number | null
 }
 
 export interface AiResultMeta {
@@ -141,6 +142,74 @@ export const aiApi = {
         designation: payload.designation,
         language: language(payload.locale),
       },
+      { timeout: 65000 },
+    )
+    return response.data
+  },
+}
+
+
+export interface ExportSummaryResult extends AiResultMeta {
+  text: string
+  language: 'en' | 'hi'
+}
+
+export interface AutofillFields {
+  caller_name: string | null
+  caller_phone: string | null
+  zone: string | null
+  department: string | null
+  designation: string | null
+  address: string | null
+  pincode: string | null
+  cpu_serial: string | null
+  monitor_serial: string | null
+  issue_names: string[]
+  others_description: string | null
+  notes: string | null
+}
+
+export interface AutofillResult extends AiResultMeta {
+  fields: AutofillFields
+  suggested_issues: TriageIssue[]
+  suggested_issue_ids: number[]
+  zone_id: number | null
+  zone_name: string | null
+  language: 'en' | 'hi'
+}
+
+export interface ExportSummaryFilters {
+  zone_ids?: number[]
+  statuses?: string[]
+  date_from?: string | null
+  date_to?: string | null
+  assigned_engineer_ids?: number[]
+  cpu_serial_contains?: string | null
+}
+
+export const assistantApi = {
+  exportSummary: async (
+    filters: ExportSummaryFilters,
+    deduplicate: boolean,
+    locale: string,
+  ): Promise<ApiResponse<ExportSummaryResult>> => {
+    logger.api('POST', '/assistant/export-summary/')
+    const response = await api.post<ApiResponse<ExportSummaryResult>>(
+      '/assistant/export-summary/',
+      { filters, deduplicate, language: language(locale) },
+      { timeout: 65000 },
+    )
+    return response.data
+  },
+
+  autofill: async (
+    transcript: string,
+    locale: string,
+  ): Promise<ApiResponse<AutofillResult>> => {
+    logger.api('POST', '/assistant/complaint-autofill/')
+    const response = await api.post<ApiResponse<AutofillResult>>(
+      '/assistant/complaint-autofill/',
+      { transcript, language: language(locale) },
       { timeout: 65000 },
     )
     return response.data

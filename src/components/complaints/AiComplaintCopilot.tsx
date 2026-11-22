@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getErrorMessage } from '@/utils/errors'
-import { cleanAiText } from '@/utils/formatters'
+import { cleanAiText, formatInrCost } from '@/utils/formatters'
 import { logger } from '@/utils/logger'
 
 interface AiComplaintCopilotProps {
@@ -150,11 +150,7 @@ const AiComplaintCopilot = ({
               <span>
                 {t('ai.metadata', {
                   tokens: result.usage.total_tokens,
-                  cost:
-                    result.usage.cost === null ||
-                    result.usage.cost === undefined
-                      ? t('ai.costUnavailable')
-                      : `$${result.usage.cost.toFixed(6)}`,
+                  cost: formatInrCost(result.usage.cost_inr),
                 })}
               </span>
               {result.task === 'draft_comment' && (

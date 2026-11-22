@@ -8,6 +8,7 @@ import { z } from 'zod'
 
 import { commentsApi } from '@/api/comments.api'
 import RoleBadge from '@/components/common/RoleBadge'
+import SpeechButton from '@/components/common/SpeechButton'
 import UserAvatar from '@/components/common/UserAvatar'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -36,7 +37,7 @@ const CommentSection = ({
   canComment,
   onChanged,
 }: CommentSectionProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [editingId, setEditingId] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [savingEdit, setSavingEdit] = useState(false)
@@ -203,11 +204,24 @@ const CommentSection = ({
           className="space-y-2 border-t border-border pt-4"
           onSubmit={createForm.handleSubmit(createComment)}
         >
-          <Textarea
-            rows={3}
-            placeholder={t('complaint.addCommentPlaceholder')}
-            {...createForm.register('body')}
-          />
+          <div className="flex items-start gap-2">
+            <Textarea
+              rows={3}
+              placeholder={t('complaint.addCommentPlaceholder')}
+              {...createForm.register('body')}
+            />
+            <SpeechButton
+              onTranscript={(text) =>
+                createForm.setValue(
+                  'body',
+                  `${createForm.getValues('body')} ${text}`.trim(),
+                  { shouldDirty: true },
+                )
+              }
+              language={i18n.language.startsWith('hi') ? 'hi-IN' : 'en-IN'}
+              disabled={submitting}
+            />
+          </div>
           {createForm.formState.errors.body && (
             <p className="text-xs text-red-600">
               {createForm.formState.errors.body.message}

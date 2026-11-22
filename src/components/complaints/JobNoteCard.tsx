@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { complaintsApi } from '@/api/complaints.api'
+import SpeechButton from '@/components/common/SpeechButton'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import type { JobNote } from '@/types/complaint.types'
@@ -31,7 +32,7 @@ const JobNoteCard = ({
   canSubmit,
   onSubmitted,
 }: JobNoteCardProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -47,6 +48,8 @@ const JobNoteCard = ({
     register,
     handleSubmit,
     reset,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<JobNoteFormValues>({
     resolver: zodResolver(schema),
@@ -97,11 +100,22 @@ const JobNoteCard = ({
   return (
     <form onSubmit={handleSubmit(submit)} className="space-y-2">
       <p className="text-sm text-muted-foreground">{t('complaint.noJobNote')}</p>
-      <Textarea
-        rows={3}
-        placeholder={t('complaint.jobNotePlaceholder')}
-        {...register('text')}
-      />
+      <div className="flex items-start gap-2">
+        <Textarea
+          rows={3}
+          placeholder={t('complaint.jobNotePlaceholder')}
+          {...register('text')}
+        />
+        <SpeechButton
+          onTranscript={(text) =>
+            setValue('text', `${getValues('text')} ${text}`.trim(), {
+              shouldDirty: true,
+            })
+          }
+          language={i18n.language.startsWith('hi') ? 'hi-IN' : 'en-IN'}
+          disabled={submitting}
+        />
+      </div>
       {errors.text && <p className="text-xs text-red-600">{errors.text.message}</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
       <Button type="submit" disabled={submitting} className="w-full">

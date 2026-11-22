@@ -84,6 +84,7 @@ const Header = () => {
       '/users': 'nav.users',
       '/zones': 'nav.zones',
       '/export': 'nav.export',
+      '/ai-logs': 'nav.aiLogs',
       '/settings': 'nav.settings',
       '/engineer/complaints': 'nav.myComplaints',
       '/engineer/all': 'nav.allComplaints',

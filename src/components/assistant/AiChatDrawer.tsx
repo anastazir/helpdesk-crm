@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { aiApi, type ChatHistoryItem, type ChatReference } from '@/api/ai.api'
+import SpeechButton from '@/components/common/SpeechButton'
 import { useAuth } from '@/hooks/useAuth'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { setAiChatOpen } from '@/store/slices/uiSlice'
@@ -18,7 +19,7 @@ import {
 } from '@/components/ui/sheet'
 import { Textarea } from '@/components/ui/textarea'
 import { getErrorMessage } from '@/utils/errors'
-import { cleanAiText } from '@/utils/formatters'
+import { cleanAiText, formatInrCost } from '@/utils/formatters'
 import { logger } from '@/utils/logger'
 
 interface ChatMessage {
@@ -27,7 +28,7 @@ interface ChatMessage {
   content: string
   references?: ChatReference[]
   tokens?: number
-  cost?: number | null
+  costInr?: number | null
 }
 
 const nextId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
@@ -87,7 +88,7 @@ const AiChatDrawer = () => {
           content: data.reply,
           references: data.references,
           tokens: data.usage.total_tokens,
-          cost: data.usage.cost,
+          costInr: data.usage.cost_inr,
         },
       ])
       logger.info('[AI CHAT] Reply received.', {
@@ -217,10 +218,7 @@ const AiChatDrawer = () => {
                       <p className="mt-2 text-[11px] text-muted-foreground">
                         {t('ai.metadata', {
                           tokens: message.tokens,
-                          cost:
-                            message.cost === null || message.cost === undefined
-                              ? t('ai.costUnavailable')
-                              : `$${message.cost.toFixed(6)}`,
+                          cost: formatInrCost(message.costInr),
                         })}
                       </p>
                     )}
@@ -256,6 +254,14 @@ const AiChatDrawer = () => {
                     void send(input)
                   }
                 }}
+              />
+              <SpeechButton
+                onTranscript={(text) =>
+                  setInput((current) => `${current} ${text}`.trim())
+                }
+                language={i18n.language.startsWith('hi') ? 'hi-IN' : 'en-IN'}
+                disabled={loading}
+                className="h-10 w-10 shrink-0"
               />
               <Button
                 type="button"
