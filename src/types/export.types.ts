@@ -19,11 +19,11 @@ export type ExportColumnKey =
   | 'pincode'
 
 export interface ExportFilters {
-  zone_id: number | null
-  status: ComplaintStatus | null
+  zone_ids: number[]
+  statuses: ComplaintStatus[]
   date_from: string | null
   date_to: string | null
-  assigned_engineer_id: number | null
+  assigned_engineer_ids: number[]
   cpu_serial_contains: string | null
 }
 
@@ -35,12 +35,19 @@ export interface ExportConfig {
 }
 
 export interface ExportPreviewRequest {
+  columns?: ExportColumnKey[]
   filters: ExportFilters
   deduplicate: boolean
 }
+
+export type ExportPreviewRow = Partial<
+  Record<ExportColumnKey, string | number>
+>
 
 export interface ExportPreview {
   total_matching: number
   after_deduplication: number
   deduplicated_count: number
+  columns: ExportColumnKey[]
+  rows: ExportPreviewRow[]
 }

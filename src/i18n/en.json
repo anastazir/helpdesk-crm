@@ -22,6 +22,8 @@
   },
   "header": {
     "openMenu": "Open menu",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
     "userMenu": "User menu",
     "settings": "Settings",
     "logout": "Log out"
@@ -128,7 +130,8 @@
     "showingRange": "Showing {{from}}-{{to}} of {{total}}",
     "pageOf": "Page {{page}} of {{total}}",
     "select": "Select",
-    "selected": "Selected"
+    "selected": "Selected",
+    "selectedCount": "{{count}} selected"
   },
   "complaint": {
     "title": "Complaints",
@@ -209,6 +212,7 @@
     "submitJobNote": "Submit Job Note",
     "jobNotePlaceholder": "Describe the parts or assistance required...",
     "jobNoteSubmitted": "Job note submitted.",
+    "uploadRequiredToResolve": "Upload the signed Service Call Report before marking this complaint as resolved.",
     "assignedEngineerCard": "Assigned Engineer",
     "assignEngineer": "Assign Engineer",
     "reassignEngineer": "Reassign Engineer",
@@ -248,6 +252,10 @@
     "notFound": "Complaint not found.",
     "backToComplaints": "Back to complaints",
     "backToMyComplaints": "Back to my complaints",
+    "reassigned": "Reassigned",
+    "previousAssignee": "Previously assigned to",
+    "currentAssignee": "Now assigned to",
+    "assignedTo": "Assigned to",
     "assignmentHistory": "Assignment History",
     "assignedAt": "Assigned at",
     "unassignedAt": "Unassigned at",
@@ -406,12 +414,15 @@
     "dedupLabel": "Show only latest complaint per system",
     "dedupDescription": "When enabled, only the newest complaint for each CPU serial number is included. Complaints without a CPU serial are always included.",
     "preview": "Export Preview",
+    "previewSubtitle": "Real data using the current filters and column order.",
     "totalMatching": "Total matching",
     "afterDedup": "After deduplication",
     "deduplicated": "−{{count}} deduplicated",
     "columnsSelected": "Columns selected",
     "miniPreview": "Preview",
     "miniPreviewEmpty": "Your export preview will appear here.",
+    "noPreviewRows": "No rows match the current filters.",
+    "previewRowsNote": "Showing {{shown}} of {{total}} matching rows",
     "downloadExcel": "Download Excel (.xlsx)",
     "downloading": "Downloading...",
     "cpuSerialContains": "CPU Serial contains",

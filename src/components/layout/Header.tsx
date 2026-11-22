@@ -1,4 +1,4 @@
-import { LogOut, Menu, Settings } from 'lucide-react'
+import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 
@@ -15,11 +15,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/hooks/useAuth'
 import { useLogout } from '@/hooks/useLogout'
-import { useAppDispatch } from '@/store/hooks'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { setLanguage } from '@/store/slices/preferencesSlice'
-import { toggleSidebar } from '@/store/slices/uiSlice'
+import { toggleSidebar, toggleSidebarCollapsed } from '@/store/slices/uiSlice'
 import type { LanguagePreference } from '@/store/slices/preferencesSlice'
-import { useAppSelector } from '@/store/hooks'
 
 const Header = () => {
   const { t } = useTranslation()
@@ -27,6 +26,7 @@ const Header = () => {
   const { logout, loggingOut } = useLogout()
   const dispatch = useAppDispatch()
   const language = useAppSelector((state) => state.preferences.language)
+  const collapsed = useAppSelector((state) => state.ui.sidebarCollapsed)
   const location = useLocation()
 
   const switchLanguage = (next: LanguagePreference) => {
@@ -99,6 +99,22 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-border bg-white px-4 dark:border-slate-800 dark:bg-slate-900 md:px-6">
       <div className="flex min-w-0 items-center gap-3">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="hidden md:inline-flex"
+          aria-label={
+            collapsed ? t('header.expandSidebar') : t('header.collapseSidebar')
+          }
+          onClick={() => dispatch(toggleSidebarCollapsed())}
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="h-5 w-5" />
+          ) : (
+            <PanelLeftClose className="h-5 w-5" />
+          )}
+        </Button>
         <Button
           type="button"
           variant="ghost"

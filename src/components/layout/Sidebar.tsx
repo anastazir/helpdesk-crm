@@ -14,8 +14,14 @@ import { NavLink } from 'react-router-dom'
 
 import RoleBadge from '@/components/common/RoleBadge'
 import UserAvatar from '@/components/common/UserAvatar'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
+import { useAppSelector } from '@/store/hooks'
 import type { UserRole } from '@/types/auth.types'
 
 interface NavItem {
@@ -48,9 +54,13 @@ const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
 
 interface SidebarContentProps {
   onNavigate?: () => void
+  collapsed?: boolean
 }
 
-export const SidebarContent = ({ onNavigate }: SidebarContentProps) => {
+export const SidebarContent = ({
+  onNavigate,
+  collapsed = false,
+}: SidebarContentProps) => {
   const { t } = useTranslation()
   const { user } = useAuth()
 
@@ -60,27 +70,35 @@ export const SidebarContent = ({ onNavigate }: SidebarContentProps) => {
 
   return (
     <div className="flex h-full flex-col overflow-y-auto bg-sidebar text-slate-300">
-      <div className="flex h-16 items-center gap-3 border-b border-slate-800 px-4">
+      <div
+        className={cn(
+          'flex h-16 items-center border-b border-slate-800',
+          collapsed ? 'justify-center px-2' : 'gap-3 px-4',
+        )}
+      >
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-primary text-sm font-bold text-primary-foreground">
           {t('app.logoShort')}
         </div>
-        <div className="min-w-0 lg:block">
-          <p className="truncate text-sm font-semibold text-white">{t('app.name')}</p>
-          <p className="truncate text-xs text-slate-400">{t('disclaimer.internal')}</p>
-        </div>
+        {!collapsed && (
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-white">{t('app.name')}</p>
+            <p className="truncate text-xs text-slate-400">{t('disclaimer.internal')}</p>
+          </div>
+        )}
       </div>
 
-      <nav className="flex-1 space-y-1 p-3">
+      <nav className={cn('flex-1 space-y-1', collapsed ? 'p-2' : 'p-3')}>
         {navItems.map((item) => {
           const Icon = item.icon
-          return (
+          const link = (
             <NavLink
-              key={item.to}
               to={item.to}
               onClick={onNavigate}
+              aria-label={t(item.labelKey)}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                  'flex items-center rounded-lg text-sm font-medium transition-colors',
+                  collapsed ? 'justify-center px-0 py-2.5' : 'gap-3 px-3 py-2',
                   isActive
                     ? 'bg-primary text-white'
                     : 'text-slate-300 hover:bg-slate-800 hover:text-white',
@@ -88,29 +106,56 @@ export const SidebarContent = ({ onNavigate }: SidebarContentProps) => {
               }
             >
               <Icon className="h-5 w-5 shrink-0" />
-              <span>{t(item.labelKey)}</span>
+              {!collapsed && <span>{t(item.labelKey)}</span>}
             </NavLink>
+          )
+
+          if (!collapsed) {
+            return <div key={item.to}>{link}</div>
+          }
+
+          return (
+            <Tooltip key={item.to}>
+              <TooltipTrigger asChild>{link}</TooltipTrigger>
+              <TooltipContent side="right">{t(item.labelKey)}</TooltipContent>
+            </Tooltip>
           )
         })}
       </nav>
 
       <div className="border-t border-slate-800 p-3">
-        <div className="flex items-center gap-3 rounded-lg px-2 py-2">
+        <div
+          className={cn(
+            'flex items-center rounded-lg',
+            collapsed ? 'justify-center px-0 py-2' : 'gap-3 px-2 py-2',
+          )}
+        >
           <UserAvatar id={user.id} fullName={user.full_name} />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-white">{user.full_name}</p>
-            <RoleBadge role={user.role} className="mt-1" />
-          </div>
+          {!collapsed && (
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-white">{user.full_name}</p>
+              <RoleBadge role={user.role} className="mt-1" />
+            </div>
+          )}
         </div>
       </div>
     </div>
   )
 }
 
-const Sidebar = () => (
-  <aside className="fixed left-0 top-0 z-30 hidden h-screen w-60 flex-col overflow-y-auto md:flex">
-    <SidebarContent />
-  </aside>
-)
+const Sidebar = () => {
+  const collapsed = useAppSelector((state) => state.ui.sidebarCollapsed)
+
+  return (
+    <aside
+      className={cn(
+        'fixed left-0 top-0 z-30 hidden h-screen flex-col overflow-y-auto transition-[width] duration-200 md:flex',
+        collapsed ? 'w-16' : 'w-60',
+      )}
+    >
+      <SidebarContent collapsed={collapsed} />
+    </aside>
+  )
+}
 
 export default Sidebar

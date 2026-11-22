@@ -22,6 +22,8 @@
   },
   "header": {
     "openMenu": "मेनू खोलें",
+    "collapseSidebar": "साइडबार छोटा करें",
+    "expandSidebar": "साइडबार बड़ा करें",
     "userMenu": "उपयोगकर्ता मेनू",
     "settings": "सेटिंग्स",
     "logout": "लॉग आउट"
@@ -128,7 +130,8 @@
     "showingRange": "{{total}} में से {{from}}-{{to}} दिखा रहे हैं",
     "pageOf": "पृष्ठ {{page}} / {{total}}",
     "select": "चुनें",
-    "selected": "चयनित"
+    "selected": "चयनित",
+    "selectedCount": "{{count}} चयनित"
   },
   "complaint": {
     "title": "शिकायतें",
@@ -209,6 +212,7 @@
     "submitJobNote": "जॉब नोट जमा करें",
     "jobNotePlaceholder": "आवश्यक पार्ट्स या सहायता का विवरण दें...",
     "jobNoteSubmitted": "जॉब नोट जमा हुआ।",
+    "uploadRequiredToResolve": "शिकायत को समाधान हुआ चिह्नित करने से पहले हस्ताक्षरित सर्विस कॉल रिपोर्ट अपलोड करें।",
     "assignedEngineerCard": "असाइन किया गया इंजीनियर",
     "assignEngineer": "इंजीनियर असाइन करें",
     "reassignEngineer": "इंजीनियर रीअसाइन करें",
@@ -248,6 +252,10 @@
     "notFound": "शिकायत नहीं मिली।",
     "backToComplaints": "शिकायतों पर वापस जाएँ",
     "backToMyComplaints": "मेरी शिकायतों पर वापस जाएँ",
+    "reassigned": "रीअसाइन किया गया",
+    "previousAssignee": "पहले असाइन किया गया",
+    "currentAssignee": "अब असाइन किया गया",
+    "assignedTo": "असाइन किया गया",
     "assignmentHistory": "असाइनमेंट इतिहास",
     "assignedAt": "असाइन समय",
     "unassignedAt": "अनअसाइन समय",
@@ -406,12 +414,15 @@
     "dedupLabel": "प्रति सिस्टम केवल नवीनतम शिकायत दिखाएँ",
     "dedupDescription": "सक्रिय होने पर प्रत्येक CPU सीरियल नंबर के लिए केवल नवीनतम शिकायत शामिल होगी। बिना CPU सीरियल वाली शिकायतें हमेशा शामिल रहेंगी।",
     "preview": "एक्सपोर्ट पूर्वावलोकन",
+    "previewSubtitle": "वर्तमान फ़िल्टर और कॉलम क्रम के अनुसार वास्तविक डेटा।",
     "totalMatching": "कुल मेल खाती",
     "afterDedup": "डुप्लिकेट हटाने के बाद",
     "deduplicated": "−{{count}} डुप्लिकेट हटाए गए",
     "columnsSelected": "चयनित कॉलम",
     "miniPreview": "पूर्वावलोकन",
     "miniPreviewEmpty": "आपका एक्सपोर्ट पूर्वावलोकन यहाँ दिखेगा।",
+    "noPreviewRows": "वर्तमान फ़िल्टर से कोई पंक्ति मेल नहीं खाती।",
+    "previewRowsNote": "{{total}} मेल खाती पंक्तियों में से {{shown}} दिखाई जा रही हैं",
     "downloadExcel": "Excel डाउनलोड करें (.xlsx)",
     "downloading": "डाउनलोड हो रहा है...",
     "cpuSerialContains": "CPU सीरियल में शामिल है",

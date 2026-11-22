@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Info } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 
 import { complaintsApi } from '@/api/complaints.api'
@@ -10,6 +11,7 @@ import { zonesApi } from '@/api/zones.api'
 import EmptyState from '@/components/common/EmptyState'
 import ErrorBanner from '@/components/common/ErrorBanner'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import MultiSelectFilter from '@/components/common/MultiSelectFilter'
 import PageHeader from '@/components/common/PageHeader'
 import Pagination from '@/components/common/Pagination'
 import StatusBadge from '@/components/complaints/StatusBadge'
@@ -17,13 +19,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -45,8 +40,8 @@ import { formatDate } from '@/utils/formatters'
 import { logger } from '@/utils/logger'
 
 const filterSchema = z.object({
-  zone: z.string(),
-  status: z.string(),
+  zone_ids: z.array(z.string()),
+  statuses: z.array(z.string()),
   search: z.string(),
 })
 
@@ -54,22 +49,33 @@ type FilterFormValues = z.infer<typeof filterSchema>
 
 const AllComplaintsPage = () => {
   const { t } = useTranslation()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [zones, setZones] = useState<Zone[]>([])
   const [myIds, setMyIds] = useState<Set<number>>(new Set())
   const [data, setData] = useState<PaginatedData<ComplaintLimited> | null>(null)
-  const [filters, setFilters] = useState<FilterFormValues>({
-    zone: '',
-    status: '',
-    search: '',
-  })
-  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const { control, register, handleSubmit, reset } = useForm<FilterFormValues>({
-    resolver: zodResolver(filterSchema),
-    defaultValues: { zone: '', status: '', search: '' },
-  })
+  const initialValues: FilterFormValues = {
+    zone_ids: searchParams.getAll('zone'),
+    statuses: searchParams.getAll('status'),
+    search: searchParams.get('search') ?? '',
+  }
+
+  const { control, register, handleSubmit, reset, watch } =
+    useForm<FilterFormValues>({
+      resolver: zodResolver(filterSchema),
+      defaultValues: initialValues,
+    })
+
+  const selectedZones = watch('zone_ids')
+  const selectedStatuses = watch('statuses')
+  const search = watch('search')
+  const zoneKey = selectedZones.join(',')
+  const statusKey = selectedStatuses.join(',')
+  const queryKey = searchParams.toString()
+  const page = Math.max(1, Number(searchParams.get('page') ?? '1') || 1)
+  const filtersInitialized = useRef(false)
 
   useEffect(() => {
     const loadOptions = async () => {
@@ -90,18 +96,54 @@ const AllComplaintsPage = () => {
     void loadOptions()
   }, [])
 
+  const applyToUrl = (values: FilterFormValues) => {
+    const params = new URLSearchParams()
+    values.zone_ids.forEach((zone) => params.append('zone', zone))
+    values.statuses.forEach((status) => params.append('status', status))
+    if (values.search.trim()) params.set('search', values.search.trim())
+    setSearchParams(params, { replace: true })
+  }
+
+  useEffect(() => {
+    if (!filtersInitialized.current) {
+      filtersInitialized.current = true
+      return
+    }
+    const timer = setTimeout(() => {
+      applyToUrl({
+        zone_ids: selectedZones,
+        statuses: selectedStatuses,
+        search,
+      })
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [zoneKey, statusKey, search])
+
   const loadComplaints = async () => {
     setLoading(true)
     setError(null)
     logger.info('[ENGINEER] Loading all complaints summary.', { page })
+
     try {
+      const zoneValues = searchParams
+        .getAll('zone')
+        .map((value) => Number(value))
+        .filter((value) => Number.isFinite(value))
+      const statusValues = searchParams.getAll('status')
+      const searchValue = searchParams.get('search') ?? ''
+      const currentPage = Math.max(
+        1,
+        Number(searchParams.get('page') ?? '1') || 1,
+      )
+
       const response = await complaintsApi.listLimited({
-        zone: filters.zone ? Number(filters.zone) : undefined,
-        status: filters.status
-          ? (filters.status as ComplaintStatus)
-          : undefined,
-        search: filters.search.trim() || undefined,
-        page,
+        zone: zoneValues.length > 0 ? zoneValues : undefined,
+        status:
+          statusValues.length > 0
+            ? (statusValues as ComplaintStatus[])
+            : undefined,
+        search: searchValue || undefined,
+        page: currentPage,
         page_size: 20,
       })
       setData(response.data)
@@ -115,20 +157,28 @@ const AllComplaintsPage = () => {
 
   useEffect(() => {
     void loadComplaints()
-  }, [filters, page])
-
-  const applyFilters = (values: FilterFormValues) => {
-    setFilters(values)
-    setPage(1)
-  }
+  }, [queryKey])
 
   const resetFilters = () => {
-    reset({ zone: '', status: '', search: '' })
-    setFilters({ zone: '', status: '', search: '' })
-    setPage(1)
+    reset({ zone_ids: [], statuses: [], search: '' })
+    setSearchParams(new URLSearchParams(), { replace: true })
   }
 
-  const statusOptions = useMemo(() => STATUS_ORDER, [])
+  const goToPage = (nextPage: number) => {
+    const params = new URLSearchParams(searchParams)
+    if (nextPage > 1) params.set('page', String(nextPage))
+    else params.delete('page')
+    setSearchParams(params)
+  }
+
+  const zoneOptions = zones.map((zone) => ({
+    value: String(zone.id),
+    label: zone.name,
+  }))
+  const statusOptions = STATUS_ORDER.map((status) => ({
+    value: status,
+    label: t(`status.${status}`),
+  }))
 
   return (
     <div>
@@ -143,7 +193,7 @@ const AllComplaintsPage = () => {
       </div>
 
       <form
-        onSubmit={handleSubmit(applyFilters)}
+        onSubmit={handleSubmit(applyToUrl)}
         className="mb-4 rounded-lg border border-border bg-white p-4 dark:bg-slate-900"
       >
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -151,26 +201,15 @@ const AllComplaintsPage = () => {
             <Label>{t('complaint.zone')}</Label>
             <Controller
               control={control}
-              name="zone"
+              name="zone_ids"
               render={({ field }) => (
-                <Select
-                  value={field.value || 'all'}
-                  onValueChange={(value) =>
-                    field.onChange(value === 'all' ? '' : value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('common.allZones')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('common.allZones')}</SelectItem>
-                    {zones.map((zone) => (
-                      <SelectItem key={zone.id} value={String(zone.id)}>
-                        {zone.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <MultiSelectFilter
+                  label={t('complaint.zone')}
+                  placeholder={t('common.allZones')}
+                  options={zoneOptions}
+                  selected={field.value}
+                  onChange={field.onChange}
+                />
               )}
             />
           </div>
@@ -179,26 +218,15 @@ const AllComplaintsPage = () => {
             <Label>{t('complaint.status')}</Label>
             <Controller
               control={control}
-              name="status"
+              name="statuses"
               render={({ field }) => (
-                <Select
-                  value={field.value || 'all'}
-                  onValueChange={(value) =>
-                    field.onChange(value === 'all' ? '' : value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('common.allStatuses')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('common.allStatuses')}</SelectItem>
-                    {statusOptions.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {t(`status.${status}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <MultiSelectFilter
+                  label={t('complaint.status')}
+                  placeholder={t('common.allStatuses')}
+                  options={statusOptions}
+                  selected={field.value}
+                  onChange={field.onChange}
+                />
               )}
             />
           </div>
@@ -212,8 +240,7 @@ const AllComplaintsPage = () => {
             />
           </div>
 
-          <div className="flex items-end gap-2">
-            <Button type="submit">{t('common.apply')}</Button>
+          <div className="flex items-end">
             <Button type="button" variant="outline" onClick={resetFilters}>
               {t('common.reset')}
             </Button>
@@ -285,7 +312,7 @@ const AllComplaintsPage = () => {
               totalPages={data.total_pages}
               count={data.count}
               pageSize={data.page_size}
-              onPageChange={setPage}
+              onPageChange={goToPage}
             />
           )}
         </>

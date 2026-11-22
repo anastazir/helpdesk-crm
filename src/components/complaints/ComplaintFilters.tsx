@@ -1,26 +1,20 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 
+import MultiSelectFilter from '@/components/common/MultiSelectFilter'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import type { EngineerUser } from '@/types/auth.types'
 import type { Zone } from '@/types/zone.types'
 
 export interface ComplaintFilterValues {
   search: string
-  zone: string
-  assigned_engineer: string
+  zone_ids: string[]
+  assigned_engineer_ids: string[]
   dateFrom: string
   dateTo: string
 }
@@ -41,23 +35,50 @@ const ComplaintFilters = ({
   onReset,
 }: ComplaintFiltersProps) => {
   const { t } = useTranslation()
+  const filtersInitialized = useRef(false)
 
   const schema = useMemo(
     () =>
       z.object({
         search: z.string(),
-        zone: z.string(),
-        assigned_engineer: z.string(),
+        zone_ids: z.array(z.string()),
+        assigned_engineer_ids: z.array(z.string()),
         dateFrom: z.string(),
         dateTo: z.string(),
       }),
     [],
   )
 
-  const { register, handleSubmit, control, reset } = useForm<ComplaintFilterValues>({
-    resolver: zodResolver(schema),
-    defaultValues: values,
-  })
+  const { register, handleSubmit, control, reset, watch } =
+    useForm<ComplaintFilterValues>({
+      resolver: zodResolver(schema),
+      defaultValues: values,
+    })
+
+  const selectedZones = watch('zone_ids')
+  const selectedEngineers = watch('assigned_engineer_ids')
+  const search = watch('search')
+  const dateFrom = watch('dateFrom')
+  const dateTo = watch('dateTo')
+  const zoneKey = selectedZones.join(',')
+  const engineerKey = selectedEngineers.join(',')
+
+  useEffect(() => {
+    if (!filtersInitialized.current) {
+      filtersInitialized.current = true
+      return
+    }
+    const timer = setTimeout(() => {
+      onChange({
+        search,
+        zone_ids: selectedZones,
+        assigned_engineer_ids: selectedEngineers,
+        dateFrom,
+        dateTo,
+      })
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [zoneKey, engineerKey, search, dateFrom, dateTo])
 
   const submit = (data: ComplaintFilterValues) => {
     onChange(data)
@@ -66,13 +87,22 @@ const ComplaintFilters = ({
   const handleReset = () => {
     reset({
       search: '',
-      zone: '',
-      assigned_engineer: '',
+      zone_ids: [],
+      assigned_engineer_ids: [],
       dateFrom: '',
       dateTo: '',
     })
     onReset()
   }
+
+  const zoneOptions = zones.map((zone) => ({
+    value: String(zone.id),
+    label: zone.name,
+  }))
+  const engineerOptions = engineers.map((engineer) => ({
+    value: String(engineer.id),
+    label: engineer.full_name,
+  }))
 
   return (
     <form
@@ -93,24 +123,15 @@ const ComplaintFilters = ({
           <Label>{t('complaint.zone')}</Label>
           <Controller
             control={control}
-            name="zone"
+            name="zone_ids"
             render={({ field }) => (
-              <Select
-                value={field.value || 'all'}
-                onValueChange={(value) => field.onChange(value === 'all' ? '' : value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('common.allZones')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('common.allZones')}</SelectItem>
-                  {zones.map((zone) => (
-                    <SelectItem key={zone.id} value={String(zone.id)}>
-                      {zone.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <MultiSelectFilter
+                label={t('complaint.zone')}
+                placeholder={t('common.allZones')}
+                options={zoneOptions}
+                selected={field.value}
+                onChange={field.onChange}
+              />
             )}
           />
         </div>
@@ -119,24 +140,15 @@ const ComplaintFilters = ({
           <Label>{t('complaint.assignedEngineer')}</Label>
           <Controller
             control={control}
-            name="assigned_engineer"
+            name="assigned_engineer_ids"
             render={({ field }) => (
-              <Select
-                value={field.value || 'all'}
-                onValueChange={(value) => field.onChange(value === 'all' ? '' : value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('common.allEngineers')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('common.allEngineers')}</SelectItem>
-                  {engineers.map((engineer) => (
-                    <SelectItem key={engineer.id} value={String(engineer.id)}>
-                      {engineer.full_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <MultiSelectFilter
+                label={t('complaint.assignedEngineer')}
+                placeholder={t('common.allEngineers')}
+                options={engineerOptions}
+                selected={field.value}
+                onChange={field.onChange}
+              />
             )}
           />
         </div>
@@ -152,11 +164,10 @@ const ComplaintFilters = ({
         </div>
       </div>
 
-      <div className="mt-3 flex justify-end gap-2">
+      <div className="mt-3 flex justify-end">
         <Button type="button" variant="outline" onClick={handleReset}>
           {t('common.reset')}
         </Button>
-        <Button type="submit">{t('common.apply')}</Button>
       </div>
     </form>
   )

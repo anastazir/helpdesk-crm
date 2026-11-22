@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   MoreHorizontal,
@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -54,8 +55,6 @@ import type { Zone } from '@/types/zone.types'
 import { getErrorMessage } from '@/utils/errors'
 import { formatDate } from '@/utils/formatters'
 import { logger } from '@/utils/logger'
-
-type RoleFilter = UserRole | 'all'
 
 const FieldError = ({ message }: { message?: string }) =>
   message ? <p className="text-sm text-red-600">{message}</p> : null
@@ -667,9 +666,15 @@ type SearchFormValues = z.infer<typeof searchSchema>
 
 const UsersPage = () => {
   const { t } = useTranslation()
-  const [roleFilter, setRoleFilter] = useState<RoleFilter>('all')
-  const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [roleFilters, setRoleFilters] = useState<UserRole[]>(
+    () => searchParams.getAll('role') as UserRole[],
+  )
+  const [search, setSearch] = useState(searchParams.get('search') ?? '')
+  const [page, setPage] = useState(
+    Math.max(1, Number(searchParams.get('page') ?? '1') || 1),
+  )
+  const searchInitialized = useRef(false)
   const [data, setData] = useState<PaginatedData<UserListItem> | null>(null)
   const [zones, setZones] = useState<Zone[]>([])
   const [loading, setLoading] = useState(true)
@@ -681,10 +686,37 @@ const UsersPage = () => {
   const [statusTarget, setStatusTarget] = useState<UserListItem | null>(null)
   const [statusLoading, setStatusLoading] = useState(false)
 
-  const { register, handleSubmit } = useForm<SearchFormValues>({
+  const { register, handleSubmit, watch } = useForm<SearchFormValues>({
     resolver: zodResolver(searchSchema),
-    defaultValues: { search: '' },
+    defaultValues: { search: searchParams.get('search') ?? '' },
   })
+  const searchInput = watch('search')
+
+  const updateUrl = (
+    roles: UserRole[],
+    searchValue: string,
+    pageNumber: number,
+  ) => {
+    const params = new URLSearchParams()
+    roles.forEach((role) => params.append('role', role))
+    if (searchValue.trim()) params.set('search', searchValue.trim())
+    if (pageNumber > 1) params.set('page', String(pageNumber))
+    setSearchParams(params, { replace: true })
+  }
+
+  useEffect(() => {
+    if (!searchInitialized.current) {
+      searchInitialized.current = true
+      return
+    }
+    const timer = setTimeout(() => {
+      const term = searchInput.trim()
+      setSearch(term)
+      setPage(1)
+      updateUrl(roleFilters, term, 1)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchInput])
 
   useEffect(() => {
     const loadZones = async () => {
@@ -701,11 +733,11 @@ const UsersPage = () => {
   const loadUsers = async () => {
     setLoading(true)
     setError(null)
-    logger.info('[USERS] Loading users.', { roleFilter, page })
+    logger.info('[USERS] Loading users.', { roleFilters, page })
 
     try {
       const response = await usersApi.list({
-        role: roleFilter === 'all' ? undefined : roleFilter,
+        role: roleFilters.length > 0 ? roleFilters : undefined,
         search: search || undefined,
         page,
         page_size: 20,
@@ -721,15 +753,36 @@ const UsersPage = () => {
 
   useEffect(() => {
     void loadUsers()
-  }, [roleFilter, search, page])
+  }, [roleFilters, search, page])
 
   const submitSearch = (values: SearchFormValues) => {
-    setSearch(values.search.trim())
+    const term = values.search.trim()
+    setSearch(term)
     setPage(1)
+    updateUrl(roleFilters, term, 1)
   }
 
-  const roleTabs: { value: RoleFilter; label: string }[] = [
-    { value: 'all', label: t('users.allRoles') },
+  const toggleRole = (role: UserRole) => {
+    const nextRoles = roleFilters.includes(role)
+      ? roleFilters.filter((item) => item !== role)
+      : [...roleFilters, role]
+    setRoleFilters(nextRoles)
+    setPage(1)
+    updateUrl(nextRoles, search, 1)
+  }
+
+  const clearRoles = () => {
+    setRoleFilters([])
+    setPage(1)
+    updateUrl([], search, 1)
+  }
+
+  const changePage = (nextPage: number) => {
+    setPage(nextPage)
+    updateUrl(roleFilters, search, nextPage)
+  }
+
+  const roleOptions: { value: UserRole; label: string }[] = [
     { value: 'admin', label: t('users.admins') },
     { value: 'helpdesk', label: t('users.helpDesk') },
     { value: 'engineer', label: t('users.engineers') },
@@ -771,17 +824,26 @@ const UsersPage = () => {
 
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap gap-1">
-          {roleTabs.map((tab) => (
+          <button
+            type="button"
+            onClick={clearRoles}
+            className={cn(
+              'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+              roleFilters.length === 0
+                ? 'bg-primary text-white'
+                : 'bg-white text-muted-foreground hover:bg-muted dark:bg-slate-900',
+            )}
+          >
+            {t('users.allRoles')}
+          </button>
+          {roleOptions.map((tab) => (
             <button
               key={tab.value}
               type="button"
-              onClick={() => {
-                setRoleFilter(tab.value)
-                setPage(1)
-              }}
+              onClick={() => toggleRole(tab.value)}
               className={cn(
                 'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-                roleFilter === tab.value
+                roleFilters.includes(tab.value)
                   ? 'bg-primary text-white'
                   : 'bg-white text-muted-foreground hover:bg-muted dark:bg-slate-900',
               )}
@@ -946,7 +1008,7 @@ const UsersPage = () => {
               totalPages={data.total_pages}
               count={data.count}
               pageSize={data.page_size}
-              onPageChange={setPage}
+              onPageChange={changePage}
             />
           )}
         </>

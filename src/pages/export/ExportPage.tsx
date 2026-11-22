@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   closestCenter,
   DndContext,
@@ -27,20 +27,13 @@ import { exportApi } from '@/api/export.api'
 import { usersApi } from '@/api/users.api'
 import { zonesApi } from '@/api/zones.api'
 import ErrorBanner from '@/components/common/ErrorBanner'
+import MultiSelectFilter from '@/components/common/MultiSelectFilter'
 import PageHeader from '@/components/common/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import {
   Table,
@@ -83,11 +76,11 @@ const ALL_COLUMNS: ExportColumnKey[] = [
 ]
 
 const exportSchema = z.object({
-  zone_id: z.string(),
-  status: z.string(),
+  zone_ids: z.array(z.string()),
+  statuses: z.array(z.string()),
   date_from: z.string(),
   date_to: z.string(),
-  assigned_engineer_id: z.string(),
+  assigned_engineer_ids: z.array(z.string()),
   cpu_serial_contains: z.string(),
   deduplicate: z.boolean(),
 })
@@ -154,11 +147,11 @@ const ExportPage = () => {
   const { control, register, watch } = useForm<ExportFormValues>({
     resolver: zodResolver(exportSchema),
     defaultValues: {
-      zone_id: '',
-      status: '',
+      zone_ids: [],
+      statuses: [],
       date_from: '',
       date_to: '',
-      assigned_engineer_id: '',
+      assigned_engineer_ids: [],
       cpu_serial_contains: '',
       deduplicate: false,
     },
@@ -191,13 +184,11 @@ const ExportPage = () => {
   }, [t])
 
   const buildFilters = (data: ExportFormValues): ExportFilters => ({
-    zone_id: data.zone_id ? Number(data.zone_id) : null,
-    status: data.status ? (data.status as ComplaintStatus) : null,
+    zone_ids: data.zone_ids.map(Number),
+    statuses: data.statuses as ComplaintStatus[],
     date_from: data.date_from || null,
     date_to: data.date_to || null,
-    assigned_engineer_id: data.assigned_engineer_id
-      ? Number(data.assigned_engineer_id)
-      : null,
+    assigned_engineer_ids: data.assigned_engineer_ids.map(Number),
     cpu_serial_contains: data.cpu_serial_contains.trim() || null,
   })
 
@@ -208,6 +199,7 @@ const ExportPage = () => {
       setPreviewError(null)
       try {
         const response = await exportApi.preview({
+          columns: selectedColumns,
           filters: buildFilters(values),
           deduplicate: values.deduplicate,
         })
@@ -229,11 +221,11 @@ const ExportPage = () => {
       clearTimeout(timer)
     }
   }, [
-    values.zone_id,
-    values.status,
+    values.zone_ids.join(','),
+    values.statuses.join(','),
     values.date_from,
     values.date_to,
-    values.assigned_engineer_id,
+    values.assigned_engineer_ids.join(','),
     values.cpu_serial_contains,
     values.deduplicate,
     selectedKey,
@@ -294,10 +286,20 @@ const ExportPage = () => {
     }
   }
 
-  const previewColumns = useMemo(
-    () => selectedColumns.slice(0, 5),
-    [selectedColumns],
-  )
+  const previewColumns = preview?.columns ?? selectedColumns
+  const previewRows = preview?.rows ?? []
+  const zoneOptions = zones.map((zone) => ({
+    value: String(zone.id),
+    label: zone.name,
+  }))
+  const statusOptions = STATUS_ORDER.map((status) => ({
+    value: status,
+    label: t(`status.${status}`),
+  }))
+  const engineerOptions = engineers.map((engineer) => ({
+    value: String(engineer.id),
+    label: engineer.full_name,
+  }))
 
   return (
     <div>
@@ -307,8 +309,7 @@ const ExportPage = () => {
         <ErrorBanner message={optionsError} onRetry={() => window.location.reload()} />
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[3fr_2fr]">
-        <div className="space-y-6">
+      <div className="grid gap-6 xl:grid-cols-2">
           <Card className="border-border shadow-sm">
             <CardHeader className="flex-row items-center justify-between space-y-0">
               <div>
@@ -336,7 +337,7 @@ const ExportPage = () => {
                   items={orderedColumns}
                   strategy={verticalListSortingStrategy}
                 >
-                  <div className="space-y-2">
+                  <div className="max-h-[26rem] space-y-2 overflow-y-auto pr-1">
                     {orderedColumns.map((column) => (
                       <SortableColumnRow
                         key={column}
@@ -351,6 +352,7 @@ const ExportPage = () => {
             </CardContent>
           </Card>
 
+          <div className="space-y-6">
           <Card className="border-border shadow-sm">
             <CardHeader>
               <CardTitle>{t('export.filters')}</CardTitle>
@@ -360,26 +362,15 @@ const ExportPage = () => {
                 <Label>{t('complaint.zone')}</Label>
                 <Controller
                   control={control}
-                  name="zone_id"
+                  name="zone_ids"
                   render={({ field }) => (
-                    <Select
-                      value={field.value || 'all'}
-                      onValueChange={(value) =>
-                        field.onChange(value === 'all' ? '' : value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('common.allZones')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">{t('common.allZones')}</SelectItem>
-                        {zones.map((zone) => (
-                          <SelectItem key={zone.id} value={String(zone.id)}>
-                            {zone.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <MultiSelectFilter
+                      label={t('complaint.zone')}
+                      placeholder={t('common.allZones')}
+                      options={zoneOptions}
+                      selected={field.value}
+                      onChange={field.onChange}
+                    />
                   )}
                 />
               </div>
@@ -388,26 +379,15 @@ const ExportPage = () => {
                 <Label>{t('complaint.status')}</Label>
                 <Controller
                   control={control}
-                  name="status"
+                  name="statuses"
                   render={({ field }) => (
-                    <Select
-                      value={field.value || 'all'}
-                      onValueChange={(value) =>
-                        field.onChange(value === 'all' ? '' : value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('common.allStatuses')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">{t('common.allStatuses')}</SelectItem>
-                        {STATUS_ORDER.map((status) => (
-                          <SelectItem key={status} value={status}>
-                            {t(`status.${status}`)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <MultiSelectFilter
+                      label={t('complaint.status')}
+                      placeholder={t('common.allStatuses')}
+                      options={statusOptions}
+                      selected={field.value}
+                      onChange={field.onChange}
+                    />
                   )}
                 />
               </div>
@@ -416,26 +396,15 @@ const ExportPage = () => {
                 <Label>{t('complaint.assignedEngineer')}</Label>
                 <Controller
                   control={control}
-                  name="assigned_engineer_id"
+                  name="assigned_engineer_ids"
                   render={({ field }) => (
-                    <Select
-                      value={field.value || 'all'}
-                      onValueChange={(value) =>
-                        field.onChange(value === 'all' ? '' : value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('common.allEngineers')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">{t('common.allEngineers')}</SelectItem>
-                        {engineers.map((engineer) => (
-                          <SelectItem key={engineer.id} value={String(engineer.id)}>
-                            {engineer.full_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <MultiSelectFilter
+                      label={t('complaint.assignedEngineer')}
+                      placeholder={t('common.allEngineers')}
+                      options={engineerOptions}
+                      selected={field.value}
+                      onChange={field.onChange}
+                    />
                   )}
                 />
               </div>
@@ -483,51 +452,57 @@ const ExportPage = () => {
               />
             </CardContent>
           </Card>
-        </div>
+          </div>
+      </div>
 
-        <div>
-          <Card className="border-border shadow-sm xl:sticky xl:top-20">
-            <CardHeader>
-              <CardTitle>{t('export.preview')}</CardTitle>
+        <Card className="border-border shadow-sm">
+            <CardHeader className="flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle>{t('export.preview')}</CardTitle>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {t('export.previewSubtitle')}
+                </p>
+              </div>
+              {previewLoading && (
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              )}
             </CardHeader>
             <CardContent className="space-y-5">
               {previewError && (
                 <p className="text-sm text-red-600">{previewError}</p>
               )}
 
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-lg border border-border bg-muted/40 p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {t('export.totalMatching')}
-                  </span>
-                  <span className="font-semibold">
-                    {previewLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      (preview?.total_matching ?? 0)
-                    )}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    {t('export.afterDedup')}
-                  </span>
-                  <span className="font-semibold">
-                    {preview?.after_deduplication ?? 0}
-                  </span>
-                </div>
-                {(preview?.deduplicated_count ?? 0) > 0 && (
-                  <p className="text-xs font-medium text-amber-600">
-                    {t('export.deduplicated', {
-                      count: preview?.deduplicated_count ?? 0,
-                    })}
                   </p>
-                )}
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">
+                  <p className="mt-1 text-2xl font-semibold">
+                    {previewLoading ? '—' : (preview?.total_matching ?? 0)}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/40 p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {t('export.afterDedup')}
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold">
+                    {previewLoading ? '—' : (preview?.after_deduplication ?? 0)}
+                  </p>
+                  {(preview?.deduplicated_count ?? 0) > 0 && (
+                    <p className="mt-1 text-xs font-medium text-amber-600">
+                      {t('export.deduplicated', {
+                        count: preview?.deduplicated_count ?? 0,
+                      })}
+                    </p>
+                  )}
+                </div>
+                <div className="rounded-lg border border-border bg-muted/40 p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {t('export.columnsSelected')}
-                  </span>
-                  <span className="font-semibold">{selectedColumns.length}</span>
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold">
+                    {selectedColumns.length}
+                  </p>
                 </div>
               </div>
 
@@ -539,26 +514,45 @@ const ExportPage = () => {
                   <p className="text-sm text-muted-foreground">
                     {t('export.miniPreviewEmpty')}
                   </p>
+                ) : previewRows.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    {previewLoading
+                      ? t('common.loading')
+                      : t('export.noPreviewRows')}
+                  </p>
                 ) : (
-                  <div className="overflow-x-auto rounded border border-border">
+                  <div className="max-h-[30rem] overflow-auto rounded-lg border border-border">
                     <Table>
-                      <TableHeader>
+                      <TableHeader className="sticky top-0 z-10 bg-muted">
                         <TableRow>
                           {previewColumns.map((column) => (
-                            <TableHead key={column} className="whitespace-nowrap text-xs">
+                            <TableHead
+                              key={column}
+                              className="whitespace-nowrap text-xs"
+                            >
                               {t(`export.columnLabels.${column}`)}
                             </TableHead>
                           ))}
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {[0, 1, 2].map((row) => (
-                          <TableRow key={row}>
-                            {previewColumns.map((column) => (
-                              <TableCell key={column}>
-                                <Skeleton className="h-4 w-16" />
-                              </TableCell>
-                            ))}
+                        {previewRows.map((row, rowIndex) => (
+                          <TableRow key={rowIndex}>
+                            {previewColumns.map((column) => {
+                              const value = row[column]
+                              return (
+                                <TableCell
+                                  key={column}
+                                  className="whitespace-nowrap text-sm"
+                                >
+                                  {value === null ||
+                                  value === undefined ||
+                                  value === ''
+                                    ? '—'
+                                    : String(value)}
+                                </TableCell>
+                              )
+                            })}
                           </TableRow>
                         ))}
                       </TableBody>
@@ -567,19 +561,24 @@ const ExportPage = () => {
                 )}
               </div>
 
-              <Button
-                type="button"
-                className="w-full"
-                onClick={() => void download()}
-                disabled={downloading || selectedColumns.length === 0}
-              >
-                <Download className="h-4 w-4" />
-                {downloading ? t('export.downloading') : t('export.downloadExcel')}
-              </Button>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs text-muted-foreground">
+                  {t('export.previewRowsNote', {
+                    shown: previewRows.length,
+                    total: preview?.after_deduplication ?? 0,
+                  })}
+                </p>
+                <Button
+                  type="button"
+                  onClick={() => void download()}
+                  disabled={downloading || selectedColumns.length === 0}
+                >
+                  <Download className="h-4 w-4" />
+                  {downloading ? t('export.downloading') : t('export.downloadExcel')}
+                </Button>
+              </div>
             </CardContent>
           </Card>
-        </div>
-      </div>
     </div>
   )
 }

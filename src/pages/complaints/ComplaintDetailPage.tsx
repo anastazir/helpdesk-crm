@@ -297,6 +297,7 @@ const ComplaintDetailPage = () => {
   const canViewComments = isAdminOrHD || isAssignedEngineer
   const canComment = canViewComments && complaint.status !== 'closed'
   const canUpload = isAssignedEngineer && complaint.status !== 'closed'
+  const canResolve = uploads.length > 0
 
   const statusActionDescription = (status: ComplaintStatus): string => {
     if (status === 'resolved') return t('complaint.confirmResolvedDescription')
@@ -694,6 +695,7 @@ const ComplaintDetailPage = () => {
                   <Button
                     type="button"
                     className="w-full"
+                    disabled={!canResolve}
                     onClick={() =>
                       setPendingAction({ type: 'status', status: 'resolved' })
                     }
@@ -719,6 +721,7 @@ const ComplaintDetailPage = () => {
                 <Button
                   type="button"
                   className="w-full"
+                  disabled={!canResolve}
                   onClick={() =>
                     setPendingAction({ type: 'status', status: 'resolved' })
                   }
@@ -747,6 +750,15 @@ const ComplaintDetailPage = () => {
                   {t('complaint.reopenComplaint')}
                 </Button>
               )}
+
+              {isAssignedEngineer &&
+                (complaint.status === 'in_progress' ||
+                  complaint.status === 'parts_provided') &&
+                !canResolve && (
+                  <p className="rounded bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
+                    {t('complaint.uploadRequiredToResolve')}
+                  </p>
+                )}
 
               {!(
                 (isAdminOrHD && complaint.status === 'open') ||

@@ -85,7 +85,7 @@ export interface AddZonePayload {
 }
 
 export interface UserListParams {
-  role?: UserRole
+  role?: UserRole | UserRole[]
   is_active?: boolean
   search?: string
   page?: number

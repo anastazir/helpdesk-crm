@@ -12,6 +12,7 @@ const api = axios.create({
   baseURL,
   headers: { 'Content-Type': 'application/json' },
   timeout: 30000,
+  paramsSerializer: { indexes: null },
 })
 
 const refreshClient = axios.create({

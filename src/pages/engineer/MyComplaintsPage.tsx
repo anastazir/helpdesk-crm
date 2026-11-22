@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ClipboardCheck, Clock, Inbox } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { complaintsApi } from '@/api/complaints.api'
@@ -38,8 +38,11 @@ const ACTIVE_STATUSES: ComplaintStatus[] = [
 const MyComplaintsPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [complaints, setComplaints] = useState<Complaint[]>([])
-  const [status, setStatus] = useState<ComplaintStatus | 'all'>('all')
+  const [statuses, setStatuses] = useState<ComplaintStatus[]>(
+    () => searchParams.getAll('status') as ComplaintStatus[],
+  )
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [actionId, setActionId] = useState<number | null>(null)
@@ -77,9 +80,16 @@ const MyComplaintsPage = () => {
   }).length
 
   const filtered =
-    status === 'all'
+    statuses.length === 0
       ? complaints
-      : complaints.filter((complaint) => complaint.status === status)
+      : complaints.filter((complaint) => statuses.includes(complaint.status))
+
+  const changeStatuses = (nextStatuses: ComplaintStatus[]) => {
+    setStatuses(nextStatuses)
+    const params = new URLSearchParams()
+    nextStatuses.forEach((nextStatus) => params.append('status', nextStatus))
+    setSearchParams(params, { replace: true })
+  }
 
   const markInProgress = async (complaint: Complaint) => {
     setActionId(complaint.id)
@@ -135,8 +145,8 @@ const MyComplaintsPage = () => {
       <div className="mt-6">
         <StatusTabBar
           statuses={ENGINEER_STATUSES}
-          value={status}
-          onChange={setStatus}
+          value={statuses}
+          onChange={changeStatuses}
         />
       </div>
 

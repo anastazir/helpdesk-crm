@@ -118,9 +118,9 @@ export interface UploadBatchResult {
 export type ComplaintOrdering = 'created_at' | 'updated_at'
 
 export interface ComplaintListParams {
-  status?: ComplaintStatus
-  zone?: number
-  assigned_engineer?: number
+  status?: ComplaintStatus | ComplaintStatus[]
+  zone?: number | number[]
+  assigned_engineer?: number | number[]
   date_from?: string
   date_to?: string
   search?: string
