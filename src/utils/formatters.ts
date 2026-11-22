@@ -53,6 +53,10 @@ export const getAvatarColor = (userId: number): string => {
 }
 
 export const toMediaUrl = (relativePath: string): string => {
-  const host = import.meta.env.VITE_API_BASE_URL.replace('/api', '')
-  return `${host}${relativePath}`
+  if (/^https?:\/\//i.test(relativePath)) return relativePath
+
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+  const host = apiBaseUrl.replace(/\/api\/?$/, '')
+  const path = relativePath.startsWith('/') ? relativePath : `/${relativePath}`
+  return `${host}${path}`
 }
