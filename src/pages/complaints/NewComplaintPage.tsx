@@ -70,6 +70,8 @@ type ComplaintFormValues = z.infer<ReturnType<typeof createSchema>>
 const NewComplaintPage = () => {
   const { t, i18n } = useTranslation()
   const aiEnabled = useAppSelector((state) => state.assistant.aiEnabled)
+  const user = useAppSelector((state) => state.auth.user)
+  const isAdmin = user?.role === 'admin'
   const navigate = useNavigate()
   const [zones, setZones] = useState<Zone[]>([])
   const [issues, setIssues] = useState<IssueType[]>([])
@@ -258,7 +260,7 @@ const NewComplaintPage = () => {
       {optionsError && <ErrorBanner message={optionsError} onRetry={() => void loadOptions()} />}
       {submitError && <ErrorBanner message={submitError} />}
 
-      {aiEnabled && <AiVoiceIntakeCard onApply={applyAutofill} />}
+      {isAdmin && aiEnabled && <AiVoiceIntakeCard onApply={applyAutofill} />}
 
       <form onSubmit={handleSubmit(submit)} className="space-y-5">
         <Card className="border-border shadow-sm">
@@ -508,7 +510,7 @@ const NewComplaintPage = () => {
           </CardContent>
         </Card>
 
-        {aiEnabled && <AiTriageCard
+        {isAdmin && aiEnabled && <AiTriageCard
           issueIds={selectedIssues}
           othersDescription={watch('others_description')}
           department={watch('department')}

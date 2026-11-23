@@ -80,6 +80,30 @@ export type ChatStreamEvent =
   | { type: 'done'; data: ChatResult }
   | { type: 'error'; message: string }
 
+const findValidationError = (
+  value: unknown,
+  path: string[] = [],
+): string | null => {
+  if (typeof value === 'string') return value
+  if (Array.isArray(value)) {
+    for (let index = 0; index < value.length; index += 1) {
+      const message = findValidationError(value[index], [
+        ...path,
+        String(index),
+      ])
+      if (message) return message
+    }
+    return null
+  }
+  if (value && typeof value === 'object') {
+    for (const [key, child] of Object.entries(value)) {
+      const message = findValidationError(child, [...path, key])
+      if (message) return message
+    }
+  }
+  return null
+}
+
 const parseSseBlock = (block: string) => {
   let eventName = 'message'
   const dataLines: string[] = []
@@ -146,8 +170,12 @@ export const aiApi = {
     if (!response.ok) {
       let errorMessage = 'Could not reach the AI assistant.'
       try {
-        const body = (await response.json()) as { message?: string }
-        errorMessage = body.message || errorMessage
+        const body = (await response.json()) as {
+          message?: string
+          errors?: unknown
+        }
+        errorMessage =
+          findValidationError(body.errors) || body.message || errorMessage
       } catch {
         errorMessage = response.statusText || errorMessage
       }

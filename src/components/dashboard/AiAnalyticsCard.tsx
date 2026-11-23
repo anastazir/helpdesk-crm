@@ -10,8 +10,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { getErrorMessage } from '@/utils/errors'
-import { cleanAiText, formatInrCost } from '@/utils/formatters'
+import { formatInrCost } from '@/utils/formatters'
 import { logger } from '@/utils/logger'
+
+import AiMarkdown from '@/components/assistant/AiMarkdown'
 
 import DynamicAiChart from './DynamicAiChart'
 
@@ -125,9 +127,7 @@ const AiAnalyticsCard = () => {
             <div>
               <h3 className="text-lg font-semibold">{result.title}</h3>
               {result.answer && (
-                <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
-                  {cleanAiText(result.answer)}
-                </p>
+                <AiMarkdown content={result.answer} className="mt-1 text-muted-foreground" />
               )}
             </div>
             <DynamicAiChart result={result} />

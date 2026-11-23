@@ -9,6 +9,7 @@ import {
   type ChatReference,
   type ChatStreamEvent,
 } from '@/api/ai.api'
+import AiMarkdown from '@/components/assistant/AiMarkdown'
 import SpeechButton from '@/components/common/SpeechButton'
 import { useAuth } from '@/hooks/useAuth'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
@@ -23,7 +24,7 @@ import {
 } from '@/components/ui/sheet'
 import { Textarea } from '@/components/ui/textarea'
 import { getErrorMessage } from '@/utils/errors'
-import { cleanAiText, formatInrCost } from '@/utils/formatters'
+import { formatInrCost } from '@/utils/formatters'
 import { logger } from '@/utils/logger'
 
 interface ChatMessage {
@@ -90,8 +91,11 @@ const AiChatDrawer = () => {
 
     const history: ChatHistoryItem[] = messages
       .filter((item) => item.role === 'user' || item.role === 'assistant')
-      .slice(-10)
-      .map((item) => ({ role: item.role, content: item.content }))
+      .slice(-8)
+      .map((item) => ({
+        role: item.role,
+        content: item.content.slice(0, 12000),
+      }))
 
     const assistantId = nextId()
     setMessages((current) => [
@@ -317,12 +321,12 @@ const AiChatDrawer = () => {
                         )}
                       </div>
                     ) : (
-                      <p className="whitespace-pre-wrap text-sm leading-6">
-                        {cleanAiText(message.content)}
+                      <>
+                        <AiMarkdown content={message.content} />
                         {message.role === 'assistant' && message.streaming && (
                           <span className="ml-0.5 inline-block h-3.5 w-1 animate-pulse bg-current align-middle" />
                         )}
-                      </p>
+                      </>
                     )}
                     {message.role === 'assistant' &&
                       message.references &&

@@ -24,6 +24,7 @@ const Header = () => {
   const { t } = useTranslation()
   const { user } = useAuth()
   const aiEnabled = useAppSelector((state) => state.assistant.aiEnabled)
+  const isAdmin = useAppSelector((state) => state.auth.user?.role === 'admin')
   const { logout, loggingOut } = useLogout()
   const dispatch = useAppDispatch()
   const language = useAppSelector((state) => state.preferences.language)
@@ -131,7 +132,7 @@ const Header = () => {
       </div>
 
       <div className="flex items-center gap-2">
-        {aiEnabled && (
+        {isAdmin && aiEnabled && (
           <Button
             type="button"
             variant="outline"

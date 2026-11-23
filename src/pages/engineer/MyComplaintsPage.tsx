@@ -40,6 +40,7 @@ const ACTIVE_STATUSES: ComplaintStatus[] = [
 const MyComplaintsPage = () => {
   const { t } = useTranslation()
   const aiEnabled = useAppSelector((state) => state.assistant.aiEnabled)
+  const isAdmin = useAppSelector((state) => state.auth.user?.role === 'admin')
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [complaints, setComplaints] = useState<Complaint[]>([])
@@ -153,7 +154,7 @@ const MyComplaintsPage = () => {
         />
       </div>
 
-      {aiEnabled && <AiDayPlanCard />}
+      {isAdmin && aiEnabled && <AiDayPlanCard />}
 
       {filtered.length === 0 ? (
         <EmptyState title={t('engineer.noComplaints')} />

@@ -79,6 +79,7 @@ const ComplaintDetailPage = () => {
   const params = useParams<{ id: string }>()
   const { user } = useAuth()
   const aiEnabled = useAppSelector((state) => state.assistant.aiEnabled)
+  const isAdmin = user?.role === 'admin'
   const complaintId = Number(params.id)
   const [complaint, setComplaint] = useState<Complaint | null>(null)
   const [history, setHistory] = useState<StatusHistoryRecord[]>([])
@@ -656,7 +657,7 @@ const ComplaintDetailPage = () => {
             </Card>
           )}
 
-          {aiEnabled && (
+          {isAdmin && aiEnabled && (
             <AiComplaintCopilot
               complaintId={complaint.id}
               canDraft={canComment}

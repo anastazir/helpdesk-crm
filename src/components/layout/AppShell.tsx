@@ -16,8 +16,21 @@ const AppShell = () => {
   const dispatch = useAppDispatch()
   const collapsed = useAppSelector((state) => state.ui.sidebarCollapsed)
   const aiEnabled = useAppSelector((state) => state.assistant.aiEnabled)
+  const user = useAppSelector((state) => state.auth.user)
+  const isAdmin = user?.role === 'admin'
 
   useEffect(() => {
+    if (!isAdmin) {
+      dispatch(
+        setAssistantSettings({
+          aiEnabled: false,
+          loaded: true,
+          canManage: false,
+        }),
+      )
+      return
+    }
+
     const loadSettings = async () => {
       try {
         const response = await assistantSettingsApi.get()
@@ -42,7 +55,7 @@ const AppShell = () => {
       }
     }
     void loadSettings()
-  }, [dispatch])
+  }, [dispatch, isAdmin])
 
   return (
     <div className="flex h-screen w-full max-w-full overflow-hidden">
@@ -59,7 +72,7 @@ const AppShell = () => {
           <Outlet />
         </main>
       </div>
-      {aiEnabled && <AiChatDrawer />}
+      {isAdmin && aiEnabled && <AiChatDrawer />}
     </div>
   )
 }

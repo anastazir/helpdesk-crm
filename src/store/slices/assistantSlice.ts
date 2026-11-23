@@ -7,7 +7,7 @@ export interface AssistantState {
 }
 
 const initialState: AssistantState = {
-  aiEnabled: true,
+  aiEnabled: false,
   loaded: false,
   canManage: false,
 }
