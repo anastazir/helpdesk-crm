@@ -26,6 +26,7 @@ export interface JobNote {
 
 export interface Complaint {
   id: number
+  reference: string
   caller_phone: string
   caller_name: string | null
   bmid: string | null
@@ -58,6 +59,7 @@ export interface Complaint {
 
 export interface ComplaintListItem {
   id: number
+  reference: string
   caller_name: string | null
   caller_phone: string
   zone: Zone | null
@@ -72,6 +74,7 @@ export interface ComplaintListItem {
 
 export interface ComplaintLimited {
   id: number
+  reference: string
   zone: string | null
   address: string | null
   status: ComplaintStatus
@@ -126,7 +129,33 @@ export interface UploadBatchResult {
 
 export type ComplaintOrdering = 'created_at' | 'updated_at'
 
+export type ComplaintPeriod = 'total' | 'today' | 'week' | 'month' | 'last_month'
+
+export interface ComplaintKpis {
+  total: number
+  today: number
+  week: number
+  month: number
+  last_month: number
+  by_status: Record<ComplaintStatus, number>
+  generated_at: string
+}
+
+export interface ZonePerformanceRow {
+  zone_id: number
+  zone_name: string
+  total: number
+  active: number
+  closed: number
+  engineers: number
+}
+
+export interface ZonePerformanceResponse {
+  zones: ZonePerformanceRow[]
+}
+
 export interface ComplaintListParams {
+  period?: ComplaintPeriod
   status?: ComplaintStatus | ComplaintStatus[]
   zone?: number | number[]
   assigned_engineer?: number | number[]

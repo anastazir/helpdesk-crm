@@ -37,11 +37,14 @@ const AppRoutes = () => (
       <Route element={<AppShell />}>
         <Route path="/" element={<HomeRedirect />} />
 
-        <Route element={<RoleRoute allowedRoles={['admin', 'helpdesk']} />}>
+        <Route element={<RoleRoute allowedRoles={['admin', 'supervisor', 'helpdesk']} />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/complaints" element={<ComplaintsListPage />} />
-          <Route path="/complaints/new" element={<NewComplaintPage />} />
           <Route path="/complaints/:id" element={<ComplaintDetailPage />} />
+        </Route>
+
+        <Route element={<RoleRoute allowedRoles={['admin', 'helpdesk']} />}>
+          <Route path="/complaints/new" element={<NewComplaintPage />} />
           <Route path="/export" element={<ExportPage />} />
         </Route>
 

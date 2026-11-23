@@ -80,6 +80,8 @@ const ComplaintDetailPage = () => {
   const { user } = useAuth()
   const aiEnabled = useAppSelector((state) => state.assistant.aiEnabled)
   const isAdmin = user?.role === 'admin'
+  const isSupervisor = user?.role === 'supervisor'
+  const canAssign = isAdmin || isSupervisor
   const complaintId = Number(params.id)
   const [complaint, setComplaint] = useState<Complaint | null>(null)
   const [history, setHistory] = useState<StatusHistoryRecord[]>([])
@@ -175,7 +177,7 @@ const ComplaintDetailPage = () => {
       setComments(commentsResponse.data ?? [])
       setUploads(uploadsResponse.data ?? [])
 
-      if (user?.role === 'admin' || user?.role === 'helpdesk') {
+      if (isAdminOrHD || isSupervisor) {
         const engineersResponse = await usersApi.engineers()
         setEngineers(engineersResponse.data ?? [])
       }
@@ -304,8 +306,9 @@ const ComplaintDetailPage = () => {
   }
 
   const canEdit = complaint.status !== 'closed' && (isAdminOrHD || engineerCanEdit)
-  const canViewComments = isAdminOrHD || isAssignedEngineer
-  const canComment = canViewComments && complaint.status !== 'closed'
+  const canViewComments = isAdminOrHD || isSupervisor || isAssignedEngineer
+  const canComment =
+    (isAdminOrHD || isAssignedEngineer) && complaint.status !== 'closed'
   const canUpload = isAssignedEngineer && complaint.status !== 'closed'
   const canResolve = uploads.length > 0
 
@@ -333,7 +336,7 @@ const ComplaintDetailPage = () => {
         </Button>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-xl font-semibold">
-            {t('common.complaintNumber', { id: complaint.id })}
+            {complaint.reference}
           </h1>
           <StatusBadge status={complaint.status} />
         </div>
@@ -592,7 +595,7 @@ const ComplaintDetailPage = () => {
         </div>
 
         <div className="min-w-0 space-y-6">
-          {isAdminOrHD && (
+          {(isAdminOrHD || isSupervisor) && (
             <Card className="min-w-0 border-border shadow-sm">
               <CardHeader>
                 <CardTitle>{t('complaint.assignedEngineerCard')}</CardTitle>
@@ -628,29 +631,33 @@ const ComplaintDetailPage = () => {
                           ))}
                         </div>
                       )}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full"
-                      disabled={complaint.status === 'closed'}
-                      onClick={() => setAssignOpen(true)}
-                    >
-                      {t('complaint.reassignEngineer')}
-                    </Button>
+                    {canAssign && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        disabled={complaint.status === 'closed'}
+                        onClick={() => setAssignOpen(true)}
+                      >
+                        {t('complaint.reassignEngineer')}
+                      </Button>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <p className="text-sm text-muted-foreground">
                       {t('complaint.noEngineerAssigned')}
                     </p>
-                    <Button
-                      type="button"
-                      className="w-full"
-                      disabled={complaint.status === 'closed'}
-                      onClick={() => setAssignOpen(true)}
-                    >
-                      {t('complaint.assignEngineer')}
-                    </Button>
+                    {canAssign && (
+                      <Button
+                        type="button"
+                        className="w-full"
+                        disabled={complaint.status === 'closed'}
+                        onClick={() => setAssignOpen(true)}
+                      >
+                        {t('complaint.assignEngineer')}
+                      </Button>
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -693,7 +700,7 @@ const ComplaintDetailPage = () => {
               <CardTitle>{t('complaint.actions')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {isAdminOrHD && complaint.status === 'open' && (
+              {canAssign && complaint.status === 'open' && (
                 <Button
                   type="button"
                   className="w-full"

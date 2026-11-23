@@ -14,7 +14,6 @@ import { Link } from 'react-router-dom'
 
 import { complaintsApi } from '@/api/complaints.api'
 import { usersApi } from '@/api/users.api'
-import { zonesApi } from '@/api/zones.api'
 import { useAppSelector } from '@/store/hooks'
 import AiAnalyticsCard from '@/components/dashboard/AiAnalyticsCard'
 import AgingBuckets from '@/components/dashboard/AgingBuckets'
@@ -23,7 +22,10 @@ import IssueHotspots from '@/components/dashboard/IssueHotspots'
 import StatusDonut from '@/components/dashboard/StatusDonut'
 import TrendChart, { type TrendPoint } from '@/components/dashboard/TrendChart'
 import ZonePerformance from '@/components/dashboard/ZonePerformance'
-import ComplaintTable from '@/components/complaints/ComplaintTable'
+import {
+  ComplaintMetricDialog,
+  EngineerRosterDialog,
+} from '@/components/dashboard/DashboardMetricDialog'
 import SLATimer from '@/components/complaints/SLATimer'
 import StatusBadge from '@/components/complaints/StatusBadge'
 import ErrorBanner from '@/components/common/ErrorBanner'
@@ -36,10 +38,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/hooks/useAuth'
 import type { EngineerUser } from '@/types/auth.types'
 import type {
+  ComplaintKpis,
   ComplaintListItem,
+  ComplaintPeriod,
   ComplaintStatus,
+  ZonePerformanceRow,
 } from '@/types/complaint.types'
-import type { Zone } from '@/types/zone.types'
 import { SLA_OVERDUE_SECONDS, STATUS_ORDER } from '@/utils/constants'
 import { getErrorMessage } from '@/utils/errors'
 import { formatDuration } from '@/utils/formatters'
@@ -56,13 +60,21 @@ const DashboardPage = () => {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const [complaints, setComplaints] = useState<ComplaintListItem[]>([])
-  const [totalCount, setTotalCount] = useState(0)
-  const [zones, setZones] = useState<Zone[]>([])
+  const [kpis, setKpis] = useState<ComplaintKpis | null>(null)
+  const [zoneRows, setZoneRows] = useState<ZonePerformanceRow[]>([])
+  const [zonePeriod, setZonePeriod] = useState<ComplaintPeriod | null>(null)
   const [engineers, setEngineers] = useState<EngineerUser[]>([])
   const [closedToday, setClosedToday] = useState(0)
   const [teamActivity, setTeamActivity] = useState<TeamActivityEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [metricDialog, setMetricDialog] = useState<{
+    title: string
+    statuses?: ComplaintStatus[]
+    zoneId?: number
+    period?: ComplaintPeriod | null
+  } | null>(null)
+  const [rosterDialog, setRosterDialog] = useState<ZonePerformanceRow | null>(null)
 
   const loadDashboard = async () => {
     setLoading(true)
@@ -70,17 +82,18 @@ const DashboardPage = () => {
     logger.info('[DASHBOARD] Loading dashboard analytics.')
 
     try {
-      const [complaintsResponse, zonesResponse, engineersResponse] =
+      const [complaintsResponse, engineersResponse, kpisResponse, zoneResponse] =
         await Promise.all([
           complaintsApi.list({ page_size: 100, ordering: 'created_at' }),
-          zonesApi.list(),
           usersApi.engineers(),
+          complaintsApi.kpis(),
+          complaintsApi.zonePerformance(zonePeriod ?? undefined),
         ])
 
       const items = complaintsResponse.data?.results ?? []
       setComplaints(items)
-      setTotalCount(complaintsResponse.data?.count ?? items.length)
-      setZones(zonesResponse.data ?? [])
+      setKpis(kpisResponse.data)
+      setZoneRows(zoneResponse.data?.zones ?? [])
       setEngineers(engineersResponse.data ?? [])
 
       const todayKey = format(new Date(), 'yyyy-MM-dd')
@@ -148,17 +161,20 @@ const DashboardPage = () => {
 
   useEffect(() => {
     void loadDashboard()
-  }, [user?.role])
+  }, [user?.role, zonePeriod])
 
-  const statusCounts = STATUS_ORDER.reduce(
-    (counts, status) => {
-      counts[status] = complaints.filter(
-        (complaint) => complaint.status === status,
-      ).length
-      return counts
-    },
-    {} as Record<ComplaintStatus, number>,
-  )
+  const statusCounts =
+    kpis?.by_status ??
+    STATUS_ORDER.reduce(
+      (counts, status) => {
+        counts[status] = complaints.filter(
+          (complaint) => complaint.status === status,
+        ).length
+        return counts
+      },
+      {} as Record<ComplaintStatus, number>,
+    )
+  const totalCount = kpis?.total ?? 0
 
   const unresolved = complaints.filter(
     (complaint) => complaint.status !== 'closed',
@@ -206,8 +222,6 @@ const DashboardPage = () => {
     }
   })
 
-  const recentComplaints = complaints.slice(0, 5)
-
   if (loading && complaints.length === 0) {
     return <LoadingSpinner />
   }
@@ -232,12 +246,51 @@ const DashboardPage = () => {
 
       {error && <ErrorBanner message={error} onRetry={() => void loadDashboard()} />}
 
+      <Card className="mb-6 min-w-0 border-border shadow-sm">
+        <CardHeader>
+          <CardTitle>{t('dashboard.zonePerformance')}</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {t('dashboard.zonePerformanceSubtitle')}
+          </p>
+        </CardHeader>
+        <CardContent>
+          <ZonePerformance
+            rows={zoneRows}
+            period={zonePeriod}
+            onPeriodChange={setZonePeriod}
+            onMetricClick={(row, metric) => {
+              const statusMap = {
+                total: undefined,
+                active: [
+                  'open',
+                  'assigned',
+                  'in_progress',
+                  'parts_requested',
+                  'parts_provided',
+                ] as ComplaintStatus[],
+                closed: ['closed'] as ComplaintStatus[],
+              }
+              setMetricDialog({
+                title: `${row.zone_name} — ${t(
+                  `dashboard.${metric === 'total' ? 'totalColumn' : metric === 'active' ? 'activeColumn' : 'closedColumn'}`,
+                )}`,
+                statuses: statusMap[metric],
+                zoneId: row.zone_id,
+                period: zonePeriod,
+              })
+            }}
+            onEngineersClick={(row) => setRosterDialog(row)}
+          />
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           title={t('dashboard.totalComplaints')}
           value={totalCount}
           hint={t('dashboard.completionRateHint', { rate: completionRate })}
           icon={Layers}
+          onClick={() => setMetricDialog({ title: t('dashboard.totalComplaints') })}
         />
         <StatCard
           title={t('dashboard.openComplaints')}
@@ -245,6 +298,7 @@ const DashboardPage = () => {
           hint={t('dashboard.unassignedHint', { count: unassignedCount })}
           icon={Inbox}
           valueClassName="text-blue-600"
+          onClick={() => setMetricDialog({ title: t('dashboard.openComplaints'), statuses: ['open'] })}
           iconClassName="bg-blue-50 text-blue-600 dark:bg-blue-950/40"
         />
         <StatCard
@@ -255,6 +309,7 @@ const DashboardPage = () => {
           })}
           icon={Clock}
           valueClassName="text-amber-600"
+          onClick={() => setMetricDialog({ title: t('dashboard.inProgress'), statuses: ['in_progress'] })}
           iconClassName="bg-amber-50 text-amber-600 dark:bg-amber-950/40"
         />
         <StatCard
@@ -262,6 +317,7 @@ const DashboardPage = () => {
           value={awaitingParts}
           icon={Package}
           valueClassName="text-violet-600"
+          onClick={() => setMetricDialog({ title: t('dashboard.awaitingParts'), statuses: ['parts_requested', 'parts_provided'] })}
           iconClassName="bg-violet-50 text-violet-600 dark:bg-violet-950/40"
         />
         <StatCard
@@ -269,6 +325,7 @@ const DashboardPage = () => {
           value={statusCounts.resolved}
           icon={CheckCircle2}
           valueClassName="text-green-600"
+          onClick={() => setMetricDialog({ title: t('dashboard.resolved'), statuses: ['resolved'] })}
           iconClassName="bg-green-50 text-green-600 dark:bg-green-950/40"
         />
         <StatCard
@@ -277,6 +334,7 @@ const DashboardPage = () => {
           hint={t('dashboard.closedTodayHint', { count: closedToday })}
           icon={Archive}
           valueClassName="text-slate-700"
+          onClick={() => setMetricDialog({ title: t('dashboard.closed'), statuses: ['closed'] })}
           iconClassName="bg-slate-100 text-slate-600 dark:bg-slate-800"
         />
       </div>
@@ -347,7 +405,7 @@ const DashboardPage = () => {
         </Card>
       </div>
 
-      <div className="mt-6 grid min-w-0 gap-6 xl:grid-cols-2">
+      <div className="mt-6 grid min-w-0 gap-6">
         <Card className="min-w-0 border-border shadow-sm">
           <CardHeader>
             <CardTitle>{t('dashboard.slaAlerts')}</CardTitle>
@@ -373,7 +431,7 @@ const DashboardPage = () => {
                           to={`/complaints/${complaint.id}`}
                           className="font-semibold text-primary hover:underline"
                         >
-                          #{complaint.id}
+                          {complaint.reference}
                         </Link>
                         <StatusBadge status={complaint.status} />
                       </div>
@@ -389,37 +447,8 @@ const DashboardPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="min-w-0 border-border shadow-sm">
-          <CardHeader>
-            <CardTitle>{t('dashboard.zonePerformance')}</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {t('dashboard.zonePerformanceSubtitle')}
-            </p>
-          </CardHeader>
-          <CardContent>
-            <ZonePerformance zones={zones} complaints={complaints} />
-          </CardContent>
-        </Card>
       </div>
 
-      <div className="mt-6">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">
-            {t('dashboard.recentComplaints')}
-          </h2>
-          <Link
-            to="/complaints"
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            {t('dashboard.viewAll')}
-          </Link>
-        </div>
-        <ComplaintTable
-          complaints={recentComplaints}
-          compact
-          showActions={false}
-        />
-      </div>
 
       {user?.role === 'admin' && (
         <Card className="mt-6 min-w-0 border-border shadow-sm">
@@ -455,6 +484,25 @@ const DashboardPage = () => {
           </CardContent>
         </Card>
       )}
+
+      <ComplaintMetricDialog
+        open={metricDialog !== null}
+        title={metricDialog?.title ?? ''}
+        statuses={metricDialog?.statuses}
+        zoneId={metricDialog?.zoneId}
+        period={metricDialog?.period}
+        onOpenChange={(open) => {
+          if (!open) setMetricDialog(null)
+        }}
+      />
+      <EngineerRosterDialog
+        open={rosterDialog !== null}
+        zoneId={rosterDialog?.zone_id}
+        zoneName={rosterDialog?.zone_name}
+        onOpenChange={(open) => {
+          if (!open) setRosterDialog(null)
+        }}
+      />
     </div>
   )
 }

@@ -51,7 +51,6 @@ const Header = () => {
     }
 
     if (path.startsWith('/complaints/')) {
-      const id = path.split('/')[2]
       return (
         <>
           <Link to="/complaints" className="hover:text-foreground">
@@ -59,14 +58,13 @@ const Header = () => {
           </Link>
           <span className="mx-2 text-slate-400">/</span>
           <span className="font-medium text-foreground">
-            {t('common.complaintNumber', { id })}
+            {t('complaint.details')}
           </span>
         </>
       )
     }
 
     if (path.startsWith('/engineer/complaints/')) {
-      const id = path.split('/')[3]
       return (
         <>
           <Link to="/engineer/complaints" className="hover:text-foreground">
@@ -74,7 +72,7 @@ const Header = () => {
           </Link>
           <span className="mx-2 text-slate-400">/</span>
           <span className="font-medium text-foreground">
-            {t('common.complaintNumber', { id })}
+            {t('complaint.details')}
           </span>
         </>
       )

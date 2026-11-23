@@ -36,6 +36,11 @@ const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
     { to: '/ai-logs', labelKey: 'nav.aiLogs', icon: Bot },
     { to: '/settings', labelKey: 'nav.settings', icon: Settings },
   ],
+  supervisor: [
+    { to: '/dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
+    { to: '/complaints', labelKey: 'nav.complaints', icon: ClipboardList },
+    { to: '/settings', labelKey: 'nav.settings', icon: Settings },
+  ],
   helpdesk: [
     { to: '/dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
     { to: '/complaints', labelKey: 'nav.complaints', icon: ClipboardList },

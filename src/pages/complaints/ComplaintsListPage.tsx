@@ -10,6 +10,7 @@ import AssignEngineerModal from '@/components/complaints/AssignEngineerModal'
 import ComplaintFilters, {
   type ComplaintFilterValues,
 } from '@/components/complaints/ComplaintFilters'
+import ComplaintKpiCards from '@/components/complaints/ComplaintKpiCards'
 import ComplaintTable from '@/components/complaints/ComplaintTable'
 import StatusTabBar from '@/components/complaints/StatusTabBar'
 import ErrorBanner from '@/components/common/ErrorBanner'
@@ -27,10 +28,13 @@ import {
 import type { PaginatedData } from '@/types/api.types'
 import type { EngineerUser } from '@/types/auth.types'
 import type {
+  ComplaintKpis,
   ComplaintListItem,
   ComplaintOrdering,
+  ComplaintPeriod,
   ComplaintStatus,
 } from '@/types/complaint.types'
+import { usePermissions } from '@/hooks/usePermissions'
 import type { Zone } from '@/types/zone.types'
 import { STATUS_ORDER } from '@/utils/constants'
 import { getErrorMessage } from '@/utils/errors'
@@ -53,6 +57,13 @@ const parseOrdering = (params: URLSearchParams): ComplaintOrdering =>
 const parseStatuses = (params: URLSearchParams): ComplaintStatus[] =>
   params.getAll('status') as ComplaintStatus[]
 
+const parsePeriod = (params: URLSearchParams): ComplaintPeriod | null => {
+  const value = params.get('period')
+  return value === 'total' || value === 'today' || value === 'week' || value === 'month' || value === 'last_month'
+    ? value
+    : null
+}
+
 const parseFilters = (params: URLSearchParams): ComplaintFilterValues => ({
   search: params.get('search') ?? '',
   zone_ids: params.getAll('zone'),
@@ -63,6 +74,7 @@ const parseFilters = (params: URLSearchParams): ComplaintFilterValues => ({
 
 const ComplaintsListPage = () => {
   const { t } = useTranslation()
+  const { canAssign, canCreate } = usePermissions()
   const [searchParams, setSearchParams] = useSearchParams()
   const [filters, setFilters] = useState<ComplaintFilterValues>(() =>
     parseFilters(searchParams),
@@ -74,6 +86,9 @@ const ComplaintsListPage = () => {
     parseOrdering(searchParams),
   )
   const [page, setPage] = useState<number>(() => parsePage(searchParams))
+  const [period, setPeriod] = useState<ComplaintPeriod | null>(() => parsePeriod(searchParams))
+  const [kpis, setKpis] = useState<ComplaintKpis | null>(null)
+  const [kpisLoading, setKpisLoading] = useState(true)
   const [zones, setZones] = useState<Zone[]>([])
   const [engineers, setEngineers] = useState<EngineerUser[]>([])
   const [data, setData] = useState<PaginatedData<ComplaintListItem> | null>(null)
@@ -103,6 +118,7 @@ const ComplaintsListPage = () => {
     nextStatuses: ComplaintStatus[],
     nextOrdering: ComplaintOrdering,
     nextPage: number,
+    nextPeriod: ComplaintPeriod | null = period,
   ) => {
     const params = new URLSearchParams()
     nextStatuses.forEach((status) => params.append('status', status))
@@ -115,8 +131,24 @@ const ComplaintsListPage = () => {
     if (nextFilters.dateTo) params.set('date_to', nextFilters.dateTo)
     if (nextOrdering !== 'created_at') params.set('ordering', nextOrdering)
     if (nextPage > 1) params.set('page', String(nextPage))
+    if (nextPeriod) params.set('period', nextPeriod)
     setSearchParams(params, { replace: true })
   }
+
+  useEffect(() => {
+    const loadKpis = async () => {
+      setKpisLoading(true)
+      try {
+        const response = await complaintsApi.kpis()
+        setKpis(response.data)
+      } catch (kpiError) {
+        logger.error('[COMPLAINTS] Failed to load KPI counts.', kpiError)
+      } finally {
+        setKpisLoading(false)
+      }
+    }
+    void loadKpis()
+  }, [])
 
   const loadComplaints = async () => {
     setLoading(true)
@@ -134,6 +166,7 @@ const ComplaintsListPage = () => {
         assigned_engineer: engineerIds.length > 0 ? engineerIds : undefined,
         date_from: filters.dateFrom || undefined,
         date_to: filters.dateTo || undefined,
+        period: period ?? undefined,
         ordering,
         page,
         page_size: 20,
@@ -149,7 +182,7 @@ const ComplaintsListPage = () => {
 
   useEffect(() => {
     void loadComplaints()
-  }, [filters, statuses, ordering, page])
+  }, [filters, statuses, ordering, page, period])
 
   const applyFilters = (values: ComplaintFilterValues) => {
     setFilters(values)
@@ -177,7 +210,16 @@ const ComplaintsListPage = () => {
 
   const changePage = (nextPage: number) => {
     setPage(nextPage)
-    updateUrl(filters, statuses, ordering, nextPage)
+    updateUrl(filters, statuses, ordering, nextPage, period)
+  }
+
+  const selectPeriod = (nextPeriod: ComplaintPeriod) => {
+    const selected = period === nextPeriod ? null : nextPeriod
+    setPeriod(selected)
+    setFilters(EMPTY_FILTERS)
+    setStatuses([])
+    setPage(1)
+    updateUrl(EMPTY_FILTERS, [], ordering, 1, selected)
   }
 
   return (
@@ -186,13 +228,22 @@ const ComplaintsListPage = () => {
         title={t('complaint.title')}
         description={t('complaint.subtitle')}
         actions={
-          <Button asChild>
-            <Link to="/complaints/new">
-              <Plus className="h-4 w-4" />
-              {t('complaint.newComplaint')}
-            </Link>
-          </Button>
+          canCreate ? (
+            <Button asChild>
+              <Link to="/complaints/new">
+                <Plus className="h-4 w-4" />
+                {t('complaint.newComplaint')}
+              </Link>
+            </Button>
+          ) : undefined
         }
+      />
+
+      <ComplaintKpiCards
+        kpis={kpis}
+        selected={period}
+        loading={kpisLoading}
+        onSelect={selectPeriod}
       />
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -201,6 +252,7 @@ const ComplaintsListPage = () => {
             statuses={STATUS_ORDER}
             value={statuses}
             onChange={changeStatuses}
+            disabled={period !== null}
           />
         </div>
         <div className="flex items-center gap-2">
@@ -230,6 +282,7 @@ const ComplaintsListPage = () => {
         engineers={engineers}
         onChange={applyFilters}
         onReset={resetFilters}
+        disabled={period !== null}
       />
 
       {error && <ErrorBanner message={error} onRetry={() => void loadComplaints()} />}
@@ -240,7 +293,7 @@ const ComplaintsListPage = () => {
         <>
           <ComplaintTable
             complaints={data?.results ?? []}
-            onAssign={(complaint) => setAssignTarget(complaint)}
+            onAssign={canAssign ? (complaint) => setAssignTarget(complaint) : undefined}
           />
           {data && (
             <Pagination

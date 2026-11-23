@@ -8,10 +8,10 @@ import type {
 import { logger } from '@/utils/logger'
 
 export const authApi = {
-  login: async (email: string, password: string): Promise<ApiResponse<LoginResponseData>> => {
-    logger.api('POST', '/auth/login/', { email })
+  login: async (identifier: string, password: string): Promise<ApiResponse<LoginResponseData>> => {
+    logger.api('POST', '/auth/login/', { identifier })
     const res = await api.post<ApiResponse<LoginResponseData>>('/auth/login/', {
-      email,
+      identifier,
       password,
     })
     return res.data

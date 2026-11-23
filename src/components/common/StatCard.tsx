@@ -11,6 +11,7 @@ interface StatCardProps {
   className?: string
   valueClassName?: string
   iconClassName?: string
+  onClick?: () => void
 }
 
 const StatCard = ({
@@ -21,8 +22,24 @@ const StatCard = ({
   className,
   valueClassName,
   iconClassName,
+  onClick,
 }: StatCardProps) => (
-  <Card className={cn('border-border shadow-sm', className)}>
+  <Card
+    role={onClick ? 'button' : undefined}
+    tabIndex={onClick ? 0 : undefined}
+    onClick={onClick}
+    onKeyDown={(event) => {
+      if (onClick && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault()
+        onClick()
+      }
+    }}
+    className={cn(
+      'border-border shadow-sm',
+      onClick && 'cursor-pointer transition-colors hover:border-primary/40',
+      className,
+    )}
+  >
     <CardContent className="flex items-start justify-between gap-3 p-5">
       <div>
         <p className="text-sm font-medium text-muted-foreground">{title}</p>

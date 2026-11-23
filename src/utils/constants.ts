@@ -34,6 +34,7 @@ export const STATUS_CHART_COLORS: Record<ComplaintStatus, string> = {
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   admin: 'Admin',
+  supervisor: 'Supervisor',
   helpdesk: 'Help Desk',
   engineer: 'Engineer',
 }
@@ -79,6 +80,7 @@ export const ENGINEER_STATUSES: ComplaintStatus[] = [
 
 export const ROLE_HOME: Record<UserRole, string> = {
   admin: '/dashboard',
+  supervisor: '/complaints',
   helpdesk: '/dashboard',
   engineer: '/engineer/complaints',
 }

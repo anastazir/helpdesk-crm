@@ -187,7 +187,7 @@ const MyComplaintsPage = () => {
                       className="font-semibold text-primary hover:underline"
                       onClick={(event) => event.stopPropagation()}
                     >
-                      #{complaint.id}
+                      {complaint.reference}
                     </Link>
                   </TableCell>
                   <TableCell>{complaint.caller_name ?? t('complaint.notRecorded')}</TableCell>

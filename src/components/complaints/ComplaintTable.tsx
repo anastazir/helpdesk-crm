@@ -28,6 +28,7 @@ interface ComplaintTableProps {
   compact?: boolean
   showActions?: boolean
   onAssign?: (complaint: ComplaintListItem) => void
+  openLinksInNewTab?: boolean
 }
 
 const ComplaintTable = ({
@@ -35,6 +36,7 @@ const ComplaintTable = ({
   compact = false,
   showActions = true,
   onAssign,
+  openLinksInNewTab = false,
 }: ComplaintTableProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -66,15 +68,23 @@ const ComplaintTable = ({
             <TableRow
               key={complaint.id}
               className="cursor-pointer"
-              onClick={() => navigate(`/complaints/${complaint.id}`)}
+              onClick={() => {
+                if (openLinksInNewTab) {
+                  window.open(`/complaints/${complaint.id}`, '_blank', 'noopener,noreferrer')
+                } else {
+                  navigate(`/complaints/${complaint.id}`)
+                }
+              }}
             >
               <TableCell>
                 <Link
                   to={`/complaints/${complaint.id}`}
                   className="font-semibold text-primary hover:underline"
                   onClick={(event) => event.stopPropagation()}
+                  target={openLinksInNewTab ? '_blank' : undefined}
+                  rel={openLinksInNewTab ? 'noopener noreferrer' : undefined}
                 >
-                  #{complaint.id}
+                  {complaint.reference}
                 </Link>
               </TableCell>
               <TableCell>{complaint.caller_name ?? t('complaint.notRecorded')}</TableCell>
@@ -126,12 +136,14 @@ const ComplaintTable = ({
                       >
                         {t('common.viewDetails')}
                       </DropdownMenuItem>
-                      {onAssign && !complaint.assigned_engineer && (
+                      {onAssign && complaint.status !== 'closed' && (
                         <DropdownMenuItem
                           className="cursor-pointer"
                           onSelect={() => onAssign(complaint)}
                         >
-                          {t('complaint.assignEngineer')}
+                          {complaint.assigned_engineer
+                            ? t('complaint.reassignEngineer')
+                            : t('complaint.assignEngineer')}
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>

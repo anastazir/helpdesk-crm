@@ -38,7 +38,8 @@
   "roles": {
     "admin": "एडमिन",
     "helpdesk": "हेल्प डेस्क",
-    "engineer": "इंजीनियर"
+    "engineer": "इंजीनियर",
+    "supervisor": "सुपरवाइज़र"
   },
   "auth": {
     "welcomeBack": "वापसी पर स्वागत है",
@@ -52,7 +53,9 @@
     "passwordPlaceholder": "अपना पासवर्ड दर्ज करें",
     "loginSuccess": "सफलतापूर्वक साइन इन हुआ।",
     "loginFailed": "साइन इन नहीं हो सका।",
-    "logoutSuccess": "सफलतापूर्वक साइन आउट हुआ।"
+    "logoutSuccess": "सफलतापूर्वक साइन आउट हुआ।",
+    "emailOrPhone": "ईमेल या फ़ोन",
+    "emailOrPhonePlaceholder": "you@example.com या 9876543210"
   },
   "status": {
     "open": "खुली",
@@ -290,7 +293,14 @@
     "manualPinLabel": "मैन्युअली पिन किया गया",
     "pinHint": "स्थान सुधारने के लिए पिन खींचें।",
     "savePin": "सुधारा हुआ पिन सहेजें",
-    "pinSaved": "स्थान पिन सहेजा गया।"
+    "pinSaved": "स्थान पिन सहेजा गया।",
+    "kpi": {
+      "total": "कुल",
+      "today": "आज",
+      "week": "इस सप्ताह",
+      "month": "इस महीने",
+      "lastMonth": "पिछला महीना"
+    }
   },
   "assign": {
     "title": "इंजीनियर असाइन करें",
@@ -539,7 +549,12 @@
     "closedColumn": "बंद",
     "engineersColumn": "इंजीनियर",
     "noZones": "कोई ज़ोन कॉन्फ़िगर नहीं है।",
-    "noEngineers": "कोई इंजीनियर उपलब्ध नहीं है।"
+    "noEngineers": "कोई इंजीनियर उपलब्ध नहीं है।",
+    "popupDescription": "इस मेट्रिक से मेल खाने वाली शिकायतें। पंक्ति पर क्लिक करके नए टैब में खोलें।",
+    "popupLoadFailed": "शिकायतें लोड नहीं हो सकीं।",
+    "zoneEngineersTitle": "{{zone}} के इंजीनियर",
+    "zoneEngineersDescription": "इस ज़ोन के लिए रीड-ओनली इंजीनियर सूची।",
+    "allTime": "सभी समय"
   },
   "users": {
     "title": "उपयोगकर्ता",
@@ -603,7 +618,38 @@
     "saveFailed": "उपयोगकर्ता सहेजा नहीं जा सका।",
     "noEngineerZones": "इस इंजीनियर को कोई ज़ोन असाइन नहीं है।",
     "cannotDisableAdmin": "एडमिन खाते निष्क्रिय नहीं किए जा सकते।",
-    "generatePasswordHint": "जनरेट किया गया पासवर्ड उपयोग करें या अपना टाइप करें।"
+    "generatePasswordHint": "जनरेट किया गया पासवर्ड उपयोग करें या अपना टाइप करें।",
+    "supervisor": "सुपरवाइज़र",
+    "usersTab": "उपयोगकर्ता",
+    "auditTab": "ऑडिट लॉग",
+    "auditAction": "क्रिया",
+    "allActions": "सभी क्रियाएँ",
+    "auditActions": {
+      "created": "बनाया गया",
+      "updated": "अपडेट किया गया",
+      "password_changed": "पासवर्ड बदला गया",
+      "disabled": "निष्क्रिय किया गया",
+      "enabled": "सक्रिय किया गया",
+      "deleted": "हटाया गया",
+      "zone_added": "ज़ोन जोड़ा गया",
+      "zone_removed": "ज़ोन हटाया गया"
+    },
+    "auditTargetSearch": "लक्ष्य खोजें",
+    "auditTargetSearchPlaceholder": "नाम, ईमेल या फ़ोन",
+    "auditTimestamp": "समय (IST)",
+    "auditActor": "कर्ता",
+    "auditTarget": "लक्ष्य",
+    "auditChanges": "परिवर्तन",
+    "auditSource": "स्रोत",
+    "systemActor": "सिस्टम",
+    "openAuditExport": "ऑडिट एक्सपोर्ट खोलें",
+    "auditLoadFailed": "ऑडिट लॉग लोड नहीं हो सका।",
+    "deleteUser": "उपयोगकर्ता हटाएँ",
+    "deleteTitle": "उपयोगकर्ता हटाएँ?",
+    "deleteDescription": "{{name}} को हटाएँ? खाता निष्क्रिय हो जाएगा, सूचियों से छिप जाएगा और ऑडिट इतिहास के लिए रखा जाएगा। सक्रिय शिकायतें पहले फिर से असाइन करनी होंगी।",
+    "deletedToast": "उपयोगकर्ता हटा दिया गया।",
+    "deleteFailed": "उपयोगकर्ता हटाया नहीं जा सका।",
+    "noAuditEvents": "कोई ऑडिट घटना नहीं मिली।"
   },
   "zones": {
     "title": "ज़ोन",
@@ -681,7 +727,14 @@
       "bmid": "BMID",
       "address": "पता",
       "pincode": "पिनकोड"
-    }
+    },
+    "userAuditTitle": "उपयोगकर्ता ऑडिट लॉग एक्सपोर्ट",
+    "userAuditDescription": "उपयोगकर्ता निर्माण, बदलाव, पासवर्ड घटनाओं, निष्क्रिय/सक्रिय और हटाने का Excel लॉग डाउनलोड करें।",
+    "auditPreview": "प्रीव्यू",
+    "auditPreviewCount": "{{count}} मिलान वाली घटनाएँ",
+    "auditPreviewFailed": "ऑडिट लॉग प्रीव्यू नहीं हो सका।",
+    "auditDownloadStarted": "ऑडिट एक्सपोर्ट डाउनलोड शुरू हुआ।",
+    "auditDownloadFailed": "ऑडिट एक्सपोर्ट डाउनलोड नहीं हो सका।"
   },
   "engineer": {
     "myComplaints": "मेरी शिकायतें",

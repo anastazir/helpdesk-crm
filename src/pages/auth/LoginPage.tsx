@@ -19,7 +19,7 @@ import { getErrorMessage } from '@/utils/errors'
 import { logger } from '@/utils/logger'
 
 interface LoginFormValues {
-  email: string
+  identifier: string
   password: string
 }
 
@@ -33,7 +33,7 @@ const LoginPage = () => {
   const schema = useMemo(
     () =>
       z.object({
-        email: z.string().min(1, t('validation.required')).email(t('validation.email')),
+        identifier: z.string().min(1, t('validation.required')),
         password: z.string().min(1, t('validation.required')),
       }),
     [t],
@@ -45,7 +45,7 @@ const LoginPage = () => {
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: '', password: '' },
+    defaultValues: { identifier: '', password: '' },
   })
 
   if (isAuthenticated && user && accessToken) {
@@ -57,7 +57,7 @@ const LoginPage = () => {
     dispatch(setError(null))
     try {
       logger.info('[LOGIN] Attempting login.')
-      const response = await authApi.login(values.email, values.password)
+      const response = await authApi.login(values.identifier, values.password)
       if (!response.success || !response.data) {
         throw new Error(response.message || t('auth.loginFailed'))
       }
@@ -154,16 +154,16 @@ const LoginPage = () => {
 
           <form onSubmit={handleSubmit(submit)} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="login-email">{t('auth.emailAddress')}</Label>
+              <Label htmlFor="login-email">{t('auth.emailOrPhone')}</Label>
               <Input
                 id="login-email"
-                type="email"
+                type="text"
                 autoComplete="email"
-                placeholder={t('auth.emailPlaceholder')}
-                {...register('email')}
+                placeholder={t('auth.emailOrPhonePlaceholder')}
+                {...register('identifier')}
               />
-              {errors.email && (
-                <p className="text-sm text-red-600">{errors.email.message}</p>
+              {errors.identifier && (
+                <p className="text-sm text-red-600">{errors.identifier.message}</p>
               )}
             </div>
 

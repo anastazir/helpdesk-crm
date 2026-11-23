@@ -13,6 +13,8 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { usersApi } from '@/api/users.api'
+import UserAuditLogPanel from '@/pages/users/UserAuditLogPanel'
+import { useAuth } from '@/hooks/useAuth'
 import { zonesApi } from '@/api/zones.api'
 import ConfirmDialog from '@/components/common/ConfirmDialog'
 import ErrorBanner from '@/components/common/ErrorBanner'
@@ -72,7 +74,7 @@ const createUserSchema = (t: (key: string) => string) =>
     email: z.string().min(1, t('validation.required')).email(t('validation.email')),
     phone: z.string().min(1, t('validation.required')),
     password: z.string().min(8, t('validation.passwordMin')),
-    role: z.enum(['admin', 'helpdesk', 'engineer']),
+    role: z.enum(['admin', 'supervisor', 'helpdesk', 'engineer']),
     zone_ids: z.array(z.number()),
   })
 
@@ -165,6 +167,7 @@ const CreateUserModal = ({
 
   const roleOptions: { value: UserRole; label: string }[] = [
     { value: 'admin', label: t('users.admin') },
+    { value: 'supervisor', label: t('users.supervisor') },
     { value: 'helpdesk', label: t('users.helpdesk') },
     { value: 'engineer', label: t('users.engineer') },
   ]
@@ -333,6 +336,7 @@ interface EditUserModalProps {
 const editUserSchema = (t: (key: string) => string) =>
   z.object({
     full_name: z.string().min(1, t('validation.required')),
+    email: z.string().min(1, t('validation.required')).email(t('validation.email')),
     phone: z.string().min(1, t('validation.required')),
   })
 
@@ -356,12 +360,12 @@ const EditUserModal = ({
     formState: { errors },
   } = useForm<EditUserFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { full_name: '', phone: '' },
+    defaultValues: { full_name: '', email: '', phone: '' },
   })
 
   useEffect(() => {
     if (open && user) {
-      reset({ full_name: user.full_name, phone: user.phone })
+      reset({ full_name: user.full_name, email: user.email, phone: user.phone })
       setError(null)
     }
   }, [open, user, reset])
@@ -373,6 +377,7 @@ const EditUserModal = ({
     try {
       await usersApi.update(user.id, {
         full_name: values.full_name.trim(),
+        email: values.email.trim(),
         phone: values.phone.trim(),
       })
       toast.success(t('users.updatedToast'))
@@ -403,6 +408,11 @@ const EditUserModal = ({
             <Label htmlFor="edit-user-name">{t('users.fullName')}</Label>
             <Input id="edit-user-name" {...register('full_name')} />
             <FieldError message={errors.full_name?.message} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="edit-user-email">{t('users.email')}</Label>
+            <Input id="edit-user-email" type="email" {...register('email')} />
+            <FieldError message={errors.email?.message} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="edit-user-phone">{t('users.phone')}</Label>
@@ -666,6 +676,10 @@ type SearchFormValues = z.infer<typeof searchSchema>
 
 const UsersPage = () => {
   const { t } = useTranslation()
+  const { user: currentUser } = useAuth()
+  const [activeTab, setActiveTab] = useState<'users' | 'audit'>('users')
+  const [deleteTarget, setDeleteTarget] = useState<UserListItem | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
   const [roleFilters, setRoleFilters] = useState<UserRole[]>(
     () => searchParams.getAll('role') as UserRole[],
@@ -784,6 +798,7 @@ const UsersPage = () => {
 
   const roleOptions: { value: UserRole; label: string }[] = [
     { value: 'admin', label: t('users.admins') },
+    { value: 'supervisor', label: t('users.supervisor') },
     { value: 'helpdesk', label: t('users.helpDesk') },
     { value: 'engineer', label: t('users.engineers') },
   ]
@@ -809,9 +824,25 @@ const UsersPage = () => {
     }
   }
 
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
+    setDeleteLoading(true)
+    try {
+      await usersApi.deleteUser(deleteTarget.id)
+      toast.success(t('users.deletedToast'))
+      setDeleteTarget(null)
+      await loadUsers()
+    } catch (deleteError) {
+      toast.error(getErrorMessage(deleteError, t('users.deleteFailed')))
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
+
   return (
     <div>
       <PageHeader
+
         title={t('users.title')}
         description={t('users.subtitle')}
         actions={
@@ -822,6 +853,35 @@ const UsersPage = () => {
         }
       />
 
+      <div className="mb-4 inline-flex rounded-lg border border-border bg-white p-1 dark:bg-slate-900">
+        <button
+          type="button"
+          onClick={() => setActiveTab('users')}
+          className={cn(
+            'rounded-md px-3 py-1.5 text-sm font-medium',
+            activeTab === 'users'
+              ? 'bg-primary text-white'
+              : 'text-muted-foreground hover:bg-muted',
+          )}
+        >
+          {t('users.usersTab')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('audit')}
+          className={cn(
+            'rounded-md px-3 py-1.5 text-sm font-medium',
+            activeTab === 'audit'
+              ? 'bg-primary text-white'
+              : 'text-muted-foreground hover:bg-muted',
+          )}
+        >
+          {t('users.auditTab')}
+        </button>
+      </div>
+
+      {activeTab === 'users' ? (
+        <>
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap gap-1">
           <button
@@ -972,8 +1032,16 @@ const UsersPage = () => {
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuSeparator />
+                          {currentUser?.id !== user.id && (
+                            <DropdownMenuItem
+                              className="cursor-pointer text-red-600 focus:text-red-600"
+                              onSelect={() => setDeleteTarget(user)}
+                            >
+                              {t('users.deleteUser')}
+                            </DropdownMenuItem>
+                          )}
                           {user.is_active ? (
-                            user.role !== 'admin' && (
+                            currentUser?.id !== user.id && (
                               <DropdownMenuItem
                                 className="cursor-pointer text-red-600 focus:text-red-600"
                                 onSelect={() => setStatusTarget(user)}
@@ -1012,6 +1080,11 @@ const UsersPage = () => {
             />
           )}
         </>
+      )}
+
+        </>
+      ) : (
+        <UserAuditLogPanel />
       )}
 
       <CreateUserModal
@@ -1066,6 +1139,21 @@ const UsersPage = () => {
         onConfirm={() => void confirmStatusChange()}
         destructive={statusTarget?.is_active}
         loading={statusLoading}
+      />
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null)
+        }}
+        title={t('users.deleteTitle')}
+        description={t('users.deleteDescription', {
+          name: deleteTarget?.full_name ?? '',
+        })}
+        confirmLabel={t('users.deleteUser')}
+        onConfirm={() => void confirmDelete()}
+        destructive
+        loading={deleteLoading}
       />
     </div>
   )

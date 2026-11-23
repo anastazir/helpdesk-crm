@@ -6,6 +6,7 @@ import type { UserRole } from '@/types/auth.types'
 
 const ROLE_CLASSES: Record<UserRole, string> = {
   admin: 'border-transparent bg-violet-100 text-violet-700',
+  supervisor: 'border-transparent bg-amber-100 text-amber-700',
   helpdesk: 'border-transparent bg-blue-100 text-blue-700',
   engineer: 'border-transparent bg-slate-100 text-slate-700',
 }

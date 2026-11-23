@@ -7,9 +7,10 @@ interface StatusTabBarProps {
   statuses: ComplaintStatus[]
   value: ComplaintStatus[]
   onChange: (value: ComplaintStatus[]) => void
+  disabled?: boolean
 }
 
-const StatusTabBar = ({ statuses, value, onChange }: StatusTabBarProps) => {
+const StatusTabBar = ({ statuses, value, onChange, disabled = false }: StatusTabBarProps) => {
   const { t } = useTranslation()
 
   const toggleStatus = (status: ComplaintStatus) => {
@@ -25,6 +26,7 @@ const StatusTabBar = ({ statuses, value, onChange }: StatusTabBarProps) => {
       <button
         type="button"
         onClick={() => onChange([])}
+        disabled={disabled}
         className={cn(
           'shrink-0 border-b-2 px-3 py-2 text-sm font-medium transition-colors',
           value.length === 0
@@ -41,6 +43,7 @@ const StatusTabBar = ({ statuses, value, onChange }: StatusTabBarProps) => {
             key={status}
             type="button"
             onClick={() => toggleStatus(status)}
+            disabled={disabled}
             className={cn(
               'shrink-0 border-b-2 px-3 py-2 text-sm font-medium transition-colors',
               selected

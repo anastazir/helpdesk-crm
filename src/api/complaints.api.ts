@@ -4,6 +4,8 @@ import type {
   AssignPayload,
   Complaint,
   ComplaintAssignmentRecord,
+  ComplaintKpis,
+  ComplaintPeriod,
   ComplaintLimited,
   ComplaintListParams,
   ComplaintListItem,
@@ -14,10 +16,28 @@ import type {
   StatusHistory,
   StatusUpdatePayload,
   UpdateComplaintPayload,
+  ZonePerformanceResponse,
 } from '@/types/complaint.types'
 import { logger } from '@/utils/logger'
 
 export const complaintsApi = {
+  kpis: async (): Promise<ApiResponse<ComplaintKpis>> => {
+    logger.api('GET', '/complaints/kpis/')
+    const res = await api.get<ApiResponse<ComplaintKpis>>('/complaints/kpis/')
+    return res.data
+  },
+
+  zonePerformance: async (
+    period?: ComplaintPeriod,
+  ): Promise<ApiResponse<ZonePerformanceResponse>> => {
+    logger.api('GET', '/complaints/zone-performance/', { period })
+    const res = await api.get<ApiResponse<ZonePerformanceResponse>>(
+      '/complaints/zone-performance/',
+      { params: { period } },
+    )
+    return res.data
+  },
+
   list: async (
     params?: ComplaintListParams,
   ): Promise<ApiResponse<PaginatedData<ComplaintListItem>>> => {

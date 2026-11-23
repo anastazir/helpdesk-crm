@@ -1,6 +1,6 @@
 import type { EngineerZoneAssignment, ZoneRef } from './zone.types'
 
-export type UserRole = 'admin' | 'helpdesk' | 'engineer'
+export type UserRole = 'admin' | 'supervisor' | 'helpdesk' | 'engineer'
 
 export interface User {
   id: number
@@ -73,6 +73,7 @@ export interface CreateUserPayload {
 
 export interface UpdateUserPayload {
   full_name?: string
+  email?: string
   phone?: string
 }
 
@@ -95,3 +96,23 @@ export interface UserListParams {
 export interface EngineerListParams {
   zone_id?: number
 }
+
+
+export interface UserAuditLog {
+  id: number
+  action: string
+  actor_id: number | null
+  actor_name: string
+  actor_email: string
+  actor_role: string
+  target_id: number | null
+  target_name: string
+  target_email: string
+  target_phone: string
+  target_role: string
+  changes: Record<string, { old?: unknown; new?: unknown } | unknown>
+  note: string
+  source: string
+  created_at: string
+}
+

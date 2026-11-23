@@ -279,7 +279,7 @@ const AllComplaintsPage = () => {
                     >
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">#{complaint.id}</span>
+                          <span className="font-medium">{complaint.reference}</span>
                           {assignedToMe && (
                             <Badge className="rounded bg-blue-100 text-[10px] text-blue-700">
                               {t('engineer.assignedToYou')}

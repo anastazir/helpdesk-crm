@@ -38,7 +38,8 @@
   "roles": {
     "admin": "Admin",
     "helpdesk": "Help Desk",
-    "engineer": "Engineer"
+    "engineer": "Engineer",
+    "supervisor": "Supervisor"
   },
   "auth": {
     "welcomeBack": "Welcome back",
@@ -52,7 +53,9 @@
     "passwordPlaceholder": "Enter your password",
     "loginSuccess": "Signed in successfully.",
     "loginFailed": "Sign in failed.",
-    "logoutSuccess": "Signed out successfully."
+    "logoutSuccess": "Signed out successfully.",
+    "emailOrPhone": "Email or phone",
+    "emailOrPhonePlaceholder": "you@example.com or 9876543210"
   },
   "status": {
     "open": "Open",
@@ -290,7 +293,14 @@
     "manualPinLabel": "Pinned manually",
     "pinHint": "Drag the pin to correct the location.",
     "savePin": "Save corrected pin",
-    "pinSaved": "Location pin saved."
+    "pinSaved": "Location pin saved.",
+    "kpi": {
+      "total": "Total",
+      "today": "Today",
+      "week": "This week",
+      "month": "This month",
+      "lastMonth": "Last month"
+    }
   },
   "assign": {
     "title": "Assign Engineer",
@@ -539,7 +549,12 @@
     "closedColumn": "Closed",
     "engineersColumn": "Engineers",
     "noZones": "No zones configured.",
-    "noEngineers": "No engineers available."
+    "noEngineers": "No engineers available.",
+    "popupDescription": "Complaints matching this metric. Click a row to open it in a new tab.",
+    "popupLoadFailed": "Could not load complaints.",
+    "zoneEngineersTitle": "Engineers in {{zone}}",
+    "zoneEngineersDescription": "Read-only engineer roster for this zone.",
+    "allTime": "All time"
   },
   "users": {
     "title": "Users",
@@ -603,7 +618,38 @@
     "saveFailed": "Could not save the user.",
     "noEngineerZones": "This engineer has no zones assigned.",
     "cannotDisableAdmin": "Admin accounts cannot be disabled.",
-    "generatePasswordHint": "Use the generated password or type your own."
+    "generatePasswordHint": "Use the generated password or type your own.",
+    "supervisor": "Supervisor",
+    "usersTab": "Users",
+    "auditTab": "Audit log",
+    "auditAction": "Action",
+    "allActions": "All actions",
+    "auditActions": {
+      "created": "Created",
+      "updated": "Updated",
+      "password_changed": "Password changed",
+      "disabled": "Disabled",
+      "enabled": "Enabled",
+      "deleted": "Deleted",
+      "zone_added": "Zone added",
+      "zone_removed": "Zone removed"
+    },
+    "auditTargetSearch": "Target search",
+    "auditTargetSearchPlaceholder": "Name, email, or phone",
+    "auditTimestamp": "Timestamp (IST)",
+    "auditActor": "Actor",
+    "auditTarget": "Target",
+    "auditChanges": "Changes",
+    "auditSource": "Source",
+    "systemActor": "System",
+    "openAuditExport": "Open audit export",
+    "auditLoadFailed": "Could not load the audit log.",
+    "deleteUser": "Delete user",
+    "deleteTitle": "Delete user?",
+    "deleteDescription": "Delete {{name}}? The account will be disabled, hidden from lists, and retained for audit history. Active complaints must be reassigned first.",
+    "deletedToast": "User deleted.",
+    "deleteFailed": "Could not delete the user.",
+    "noAuditEvents": "No audit events found."
   },
   "zones": {
     "title": "Zones",
@@ -681,7 +727,14 @@
       "bmid": "BMID",
       "address": "Address",
       "pincode": "Pincode"
-    }
+    },
+    "userAuditTitle": "User Audit Log Export",
+    "userAuditDescription": "Download an Excel log of user creation, changes, password events, disable/enable, and deletion.",
+    "auditPreview": "Preview",
+    "auditPreviewCount": "{{count}} matching events",
+    "auditPreviewFailed": "Could not preview the audit log.",
+    "auditDownloadStarted": "Audit export download started.",
+    "auditDownloadFailed": "Could not download the audit export."
   },
   "engineer": {
     "myComplaints": "My Complaints",

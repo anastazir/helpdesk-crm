@@ -6,6 +6,7 @@ import { z } from 'zod'
 
 import MultiSelectFilter from '@/components/common/MultiSelectFilter'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { EngineerUser } from '@/types/auth.types'
@@ -25,6 +26,7 @@ interface ComplaintFiltersProps {
   engineers: EngineerUser[]
   onChange: (values: ComplaintFilterValues) => void
   onReset: () => void
+  disabled?: boolean
 }
 
 const ComplaintFilters = ({
@@ -33,6 +35,7 @@ const ComplaintFilters = ({
   engineers,
   onChange,
   onReset,
+  disabled = false,
 }: ComplaintFiltersProps) => {
   const { t } = useTranslation()
   const filtersInitialized = useRef(false)
@@ -106,8 +109,12 @@ const ComplaintFilters = ({
 
   return (
     <form
+      aria-disabled={disabled}
       onSubmit={handleSubmit(submit)}
-      className="mb-4 rounded-lg border border-border bg-white p-4 dark:bg-slate-900"
+      className={cn(
+        'mb-4 rounded-lg border border-border bg-white p-4 dark:bg-slate-900',
+        disabled && 'pointer-events-none opacity-60',
+      )}
     >
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
         <div className="space-y-1.5 xl:col-span-2">

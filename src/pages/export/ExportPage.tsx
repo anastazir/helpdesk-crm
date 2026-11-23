@@ -20,6 +20,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Download, GripVertical, Loader2 } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -138,6 +139,7 @@ const SortableColumnRow = ({
 const ExportPage = () => {
   const { t } = useTranslation()
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
   const aiEnabled = useAppSelector((state) => state.assistant.aiEnabled)
   const [zones, setZones] = useState<Zone[]>([])
   const [engineers, setEngineers] = useState<EngineerUser[]>([])
@@ -169,6 +171,14 @@ const ExportPage = () => {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
+
+  useEffect(() => {
+    if (searchParams.get('type') === 'user-audit') {
+      window.setTimeout(() => {
+        document.getElementById('user-audit')?.scrollIntoView({ behavior: 'smooth' })
+      }, 200)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     const loadOptions = async () => {

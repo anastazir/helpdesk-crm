@@ -10,11 +10,27 @@ import type {
   UserDetail,
   UserListParams,
   UserListItem,
+  UserAuditLog,
 } from '@/types/auth.types'
 import type { EngineerZoneAssignment, ZoneRef } from '@/types/zone.types'
 import { logger } from '@/utils/logger'
 
 export const usersApi = {
+  auditLogs: async (params?: Record<string, string | number | undefined>): Promise<ApiResponse<PaginatedData<UserAuditLog>>> => {
+    logger.api('GET', '/users/audit-logs/', params)
+    const res = await api.get<ApiResponse<PaginatedData<UserAuditLog>>>(
+      '/users/audit-logs/',
+      { params },
+    )
+    return res.data
+  },
+
+  deleteUser: async (id: number): Promise<ApiResponse<null>> => {
+    logger.api('DELETE', `/users/${id}/`)
+    const res = await api.delete<ApiResponse<null>>(`/users/${id}/`)
+    return res.data
+  },
+
   list: async (params?: UserListParams): Promise<ApiResponse<PaginatedData<UserListItem>>> => {
     logger.api('GET', '/users/', params)
     const res = await api.get<ApiResponse<PaginatedData<UserListItem>>>('/users/', { params })
