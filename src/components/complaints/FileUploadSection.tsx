@@ -58,14 +58,14 @@ const FileUploadItemCard = ({ file }: { file: FileUploadItem }) => {
         href={url}
         target="_blank"
         rel="noreferrer"
-        className="group block overflow-hidden rounded-lg border border-border"
+        className="group block w-full min-w-0 overflow-hidden rounded-lg border border-border bg-white dark:bg-slate-900"
       >
         <img
           src={url}
           alt={t('complaint.filePreviewAlt')}
           className="h-28 w-full object-cover transition-transform group-hover:scale-105"
         />
-        <p className="truncate px-2 py-1 text-xs text-muted-foreground">
+        <p className="truncate px-2 py-1 text-xs text-muted-foreground" title={file.original_name}>
           {file.original_name}
         </p>
       </a>
@@ -77,10 +77,11 @@ const FileUploadItemCard = ({ file }: { file: FileUploadItem }) => {
       href={url}
       target="_blank"
       rel="noreferrer"
-      className="flex h-28 flex-col items-center justify-center gap-2 rounded-lg border border-border bg-slate-50 px-3 text-center hover:bg-slate-100 dark:bg-slate-800"
+      className="flex h-28 w-full min-w-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-border bg-slate-50 px-3 text-center hover:bg-slate-100 dark:bg-slate-800"
+    title={file.original_name}
     >
       <FileText className="h-8 w-8 text-red-500" />
-      <span className="line-clamp-2 text-xs text-muted-foreground">
+      <span className="line-clamp-2 w-full break-all text-xs leading-4 text-muted-foreground">
         {file.original_name}
       </span>
     </a>
@@ -186,7 +187,7 @@ const FileUploadSection = ({
   const previousCount = Math.max(uploads.length - 1, 0)
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       {uploads.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t('complaint.noUploads')}</p>
       ) : (
@@ -199,11 +200,11 @@ const FileUploadSection = ({
           {batches.map((batch) => (
             <div key={batch.batch_number} className="space-y-2">
               {showHistory && (
-                <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
                   <p className="text-sm font-medium">
                     {t('complaint.uploadBatch', { number: batch.batch_number })}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="max-w-full break-words text-right text-xs text-muted-foreground">
                     {formatDate(batch.uploaded_at)}
                     {batch.uploaded_by
                       ? ` · ${t('complaint.uploadedBy', {
@@ -213,7 +214,7 @@ const FileUploadSection = ({
                   </p>
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {batch.files.map((file) => (
                   <FileUploadItemCard key={file.id} file={file} />
                 ))}
@@ -288,11 +289,11 @@ const FileUploadSection = ({
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t('complaint.selectedFiles')}
               </p>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3">
                 {selected.map((item, index) => (
                   <div
                     key={`${item.file.name}-${index}`}
-                    className="relative overflow-hidden rounded-lg border border-border bg-white dark:bg-slate-900"
+                    className="relative min-w-0 overflow-hidden rounded-lg border border-border bg-white dark:bg-slate-900"
                   >
                     {item.preview ? (
                       <img
@@ -311,7 +312,7 @@ const FileUploadSection = ({
                       ) : (
                         <FileText className="h-3 w-3 shrink-0 text-muted-foreground" />
                       )}
-                      <span className="truncate text-xs text-muted-foreground">
+                      <span className="truncate text-xs text-muted-foreground" title={item.file.name}>
                         {item.file.name}
                       </span>
                     </div>

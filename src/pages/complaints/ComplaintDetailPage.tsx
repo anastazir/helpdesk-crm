@@ -347,8 +347,8 @@ const ComplaintDetailPage = () => {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-        <div className="space-y-6">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="min-w-0 space-y-6">
           <Card className="border-border shadow-sm">
             <CardHeader className="flex-row items-start justify-between space-y-0">
               <div>
@@ -591,9 +591,9 @@ const ComplaintDetailPage = () => {
           </Card>
         </div>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           {isAdminOrHD && (
-            <Card className="border-border shadow-sm">
+            <Card className="min-w-0 border-border shadow-sm">
               <CardHeader>
                 <CardTitle>{t('complaint.assignedEngineerCard')}</CardTitle>
               </CardHeader>
