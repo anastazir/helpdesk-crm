@@ -76,6 +76,7 @@ const createUserSchema = (t: (key: string) => string) =>
     password: z.string().min(8, t('validation.passwordMin')),
     role: z.enum(['admin', 'supervisor', 'helpdesk', 'engineer']),
     zone_ids: z.array(z.number()),
+    whatsapp_opt_in: z.boolean(),
   })
 
 type CreateUserFormValues = z.infer<ReturnType<typeof createUserSchema>>
@@ -108,6 +109,7 @@ const CreateUserModal = ({
       password: '',
       role: 'helpdesk',
       zone_ids: [],
+      whatsapp_opt_in: false,
     },
   })
 
@@ -123,6 +125,7 @@ const CreateUserModal = ({
         password: '',
         role: 'helpdesk',
         zone_ids: [],
+        whatsapp_opt_in: false,
       })
       setError(null)
     }
@@ -150,6 +153,8 @@ const CreateUserModal = ({
         password: values.password,
         role: values.role,
         zone_ids: values.role === 'engineer' ? values.zone_ids : undefined,
+        whatsapp_opt_in:
+          values.role === 'engineer' ? values.whatsapp_opt_in : undefined,
       })
       logger.info('[USERS] User created.', { role: values.role })
       toast.success(t('users.createdToast'))
@@ -307,6 +312,24 @@ const CreateUserModal = ({
             </div>
           )}
 
+          {selectedRole === 'engineer' && (
+            <div className="rounded-md border border-border bg-muted/30 p-3">
+              <label className="flex cursor-pointer items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 rounded border-border accent-primary"
+                  {...register('whatsapp_opt_in')}
+                />
+                <span>
+                  <span className="font-medium">{t('users.whatsappConsent')}</span>
+                  <span className="mt-1 block text-xs text-muted-foreground">
+                    {t('users.whatsappConsentHint')}
+                  </span>
+                </span>
+              </label>
+            </div>
+          )}
+
           <DialogFooter>
             <Button
               type="button"
@@ -338,6 +361,7 @@ const editUserSchema = (t: (key: string) => string) =>
     full_name: z.string().min(1, t('validation.required')),
     email: z.string().min(1, t('validation.required')).email(t('validation.email')),
     phone: z.string().min(1, t('validation.required')),
+    whatsapp_opt_in: z.boolean(),
   })
 
 type EditUserFormValues = z.infer<ReturnType<typeof editUserSchema>>
@@ -360,12 +384,22 @@ const EditUserModal = ({
     formState: { errors },
   } = useForm<EditUserFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { full_name: '', email: '', phone: '' },
+    defaultValues: {
+      full_name: '',
+      email: '',
+      phone: '',
+      whatsapp_opt_in: false,
+    },
   })
 
   useEffect(() => {
     if (open && user) {
-      reset({ full_name: user.full_name, email: user.email, phone: user.phone })
+      reset({
+        full_name: user.full_name,
+        email: user.email,
+        phone: user.phone,
+        whatsapp_opt_in: user.whatsapp_opt_in ?? false,
+      })
       setError(null)
     }
   }, [open, user, reset])
@@ -379,6 +413,8 @@ const EditUserModal = ({
         full_name: values.full_name.trim(),
         email: values.email.trim(),
         phone: values.phone.trim(),
+        whatsapp_opt_in:
+          user.role === 'engineer' ? values.whatsapp_opt_in : undefined,
       })
       toast.success(t('users.updatedToast'))
       onOpenChange(false)
@@ -419,6 +455,24 @@ const EditUserModal = ({
             <Input id="edit-user-phone" {...register('phone')} />
             <FieldError message={errors.phone?.message} />
           </div>
+
+          {user?.role === 'engineer' && (
+            <div className="rounded-md border border-border bg-muted/30 p-3">
+              <label className="flex cursor-pointer items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 rounded border-border accent-primary"
+                  {...register('whatsapp_opt_in')}
+                />
+                <span>
+                  <span className="font-medium">{t('users.whatsappConsent')}</span>
+                  <span className="mt-1 block text-xs text-muted-foreground">
+                    {t('users.whatsappConsentHint')}
+                  </span>
+                </span>
+              </label>
+            </div>
+          )}
           <DialogFooter>
             <Button
               type="button"
@@ -993,16 +1047,32 @@ const UsersPage = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        className={cn(
-                          'rounded',
-                          user.is_active
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-slate-100 text-slate-600',
+                      <div className="flex flex-col items-start gap-1">
+                        <Badge
+                          className={cn(
+                            'rounded',
+                            user.is_active
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-slate-100 text-slate-600',
+                          )}
+                        >
+                          {user.is_active ? t('users.active') : t('users.disabled')}
+                        </Badge>
+                        {user.role === 'engineer' && (
+                          <Badge
+                            className={cn(
+                              'rounded',
+                              user.whatsapp_opt_in
+                                ? 'bg-emerald-50 text-emerald-700'
+                                : 'bg-amber-50 text-amber-700',
+                            )}
+                          >
+                            {user.whatsapp_opt_in
+                              ? t('users.whatsappEnabled')
+                              : t('users.whatsappNotEnabled')}
+                          </Badge>
                         )}
-                      >
-                        {user.is_active ? t('users.active') : t('users.disabled')}
-                      </Badge>
+                      </div>
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                       {formatDate(user.created_at)}

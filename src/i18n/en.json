@@ -653,7 +653,11 @@
     "activeComplaints": "Active complaints",
     "deleteBlockedTitle": "Cannot delete user",
     "deleteBlockedDescription": "{{name}} still has active complaints. Reassign them before deleting this account.",
-    "deleteBlockedHint": "Open each complaint in a new tab, reassign the engineer, then retry the deletion."
+    "deleteBlockedHint": "Open each complaint in a new tab, reassign the engineer, then retry the deletion.",
+    "whatsappConsent": "WhatsApp assignment notifications",
+    "whatsappConsentHint": "The engineer agrees to receive complaint assignment messages from Help Desk CRM at this number. Reply STOP to opt out.",
+    "whatsappEnabled": "WhatsApp enabled",
+    "whatsappNotEnabled": "WhatsApp not enabled"
   },
   "zones": {
     "title": "Zones",

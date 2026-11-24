@@ -9,6 +9,10 @@ export interface User {
   phone: string
   role: UserRole
   is_active: boolean
+  whatsapp_opt_in?: boolean
+  whatsapp_opt_in_at?: string | null
+  whatsapp_opt_out_at?: string | null
+  whatsapp_opt_in_source?: string
   created_at: string
 }
 
@@ -69,12 +73,14 @@ export interface CreateUserPayload {
   password: string
   role: UserRole
   zone_ids?: number[]
+  whatsapp_opt_in?: boolean
 }
 
 export interface UpdateUserPayload {
   full_name?: string
   email?: string
   phone?: string
+  whatsapp_opt_in?: boolean
 }
 
 export interface ResetPasswordPayload {
