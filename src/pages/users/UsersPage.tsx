@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -680,6 +680,7 @@ const UsersPage = () => {
   const [activeTab, setActiveTab] = useState<'users' | 'audit'>('users')
   const [deleteTarget, setDeleteTarget] = useState<UserListItem | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [deleteConflicts, setDeleteConflicts] = useState<string[]>([])
   const [searchParams, setSearchParams] = useSearchParams()
   const [roleFilters, setRoleFilters] = useState<UserRole[]>(
     () => searchParams.getAll('role') as UserRole[],
@@ -827,13 +828,23 @@ const UsersPage = () => {
   const confirmDelete = async () => {
     if (!deleteTarget) return
     setDeleteLoading(true)
+    setDeleteConflicts([])
     try {
       await usersApi.deleteUser(deleteTarget.id)
       toast.success(t('users.deletedToast'))
       setDeleteTarget(null)
       await loadUsers()
     } catch (deleteError) {
-      toast.error(getErrorMessage(deleteError, t('users.deleteFailed')))
+      const conflicts =
+        (deleteError as { response?: { data?: { errors?: { active_complaints?: string[] } } } })
+          ?.response?.data?.errors?.active_complaints ??
+        []
+      if (conflicts.length) {
+        setDeleteConflicts(conflicts)
+      } else {
+        setDeleteTarget(null)
+        toast.error(getErrorMessage(deleteError, t('users.deleteFailed')))
+      }
     } finally {
       setDeleteLoading(false)
     }
@@ -1144,7 +1155,10 @@ const UsersPage = () => {
       <ConfirmDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null)
+          if (!open) {
+            setDeleteTarget(null)
+            setDeleteConflicts([])
+          }
         }}
         title={t('users.deleteTitle')}
         description={t('users.deleteDescription', {
@@ -1155,6 +1169,48 @@ const UsersPage = () => {
         destructive
         loading={deleteLoading}
       />
+
+      <Dialog open={deleteConflicts.length > 0} onOpenChange={(open) => { if (!open) setDeleteConflicts([]) }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t('users.deleteBlockedTitle')}</DialogTitle>
+            <DialogDescription>{t('users.deleteBlockedDescription', { name: deleteTarget?.full_name ?? '' })}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">{t('users.deleteBlockedHint')}</p>
+            <div className="max-h-72 overflow-auto rounded-md border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('users.activeComplaints')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {deleteConflicts.map((reference) => (
+                    <TableRow key={reference}>
+                      <TableCell>
+                        <Link
+                          to={`/complaints?search=${encodeURIComponent(reference)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary underline underline-offset-2"
+                        >
+                          {reference}
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setDeleteConflicts([])}>
+              {t('common.close')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

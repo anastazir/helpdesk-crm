@@ -649,7 +649,11 @@
     "deleteDescription": "Delete {{name}}? The account will be disabled, hidden from lists, and retained for audit history. Active complaints must be reassigned first.",
     "deletedToast": "User deleted.",
     "deleteFailed": "Could not delete the user.",
-    "noAuditEvents": "No audit events found."
+    "noAuditEvents": "No audit events found.",
+    "activeComplaints": "Active complaints",
+    "deleteBlockedTitle": "Cannot delete user",
+    "deleteBlockedDescription": "{{name}} still has active complaints. Reassign them before deleting this account.",
+    "deleteBlockedHint": "Open each complaint in a new tab, reassign the engineer, then retry the deletion."
   },
   "zones": {
     "title": "Zones",
