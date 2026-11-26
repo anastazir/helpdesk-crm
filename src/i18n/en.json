@@ -300,6 +300,16 @@
       "week": "This week",
       "month": "This month",
       "lastMonth": "Last month"
+    },
+    "whatsappNotification": "WhatsApp notification",
+    "whatsappStatus": {
+      "queued": "Queued",
+      "sending": "Sending",
+      "sent": "Sent",
+      "delivered": "Delivered",
+      "read": "Read",
+      "failed": "Failed",
+      "skipped": "Skipped"
     }
   },
   "assign": {
@@ -820,7 +830,30 @@
     "aiLogsRemain": "AI audit logs remain available to admins.",
     "aiSaveFailed": "Could not update the AI setting.",
     "aiTurnedOn": "AI features turned on.",
-    "aiTurnedOff": "AI features turned off."
+    "aiTurnedOff": "AI features turned off.",
+    "whatsappIntegration": "WhatsApp integration",
+    "whatsappOn": "On",
+    "whatsappOff": "Off",
+    "whatsappAdminDescription": "Control WhatsApp assignment notifications for engineers. Turning this off hides engineer WhatsApp settings and stops all WhatsApp messages.",
+    "whatsappEnableFeature": "Enable WhatsApp notifications",
+    "whatsappEnableFeatureHint": "When off, no assignment or reassignment messages are sent.",
+    "whatsappServerDisabled": "WhatsApp is disabled at the server level. Configure WHATSAPP_ENABLED and the Meta credentials before using it.",
+    "whatsappNotConfigured": "Meta credentials are missing. Add WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_ID on the server.",
+    "whatsappDisabledHint": "Existing notification records are retained, but no new messages will be sent.",
+    "whatsappEngineerTitle": "WhatsApp assignment alerts",
+    "whatsappEngineerDescription": "Receive a WhatsApp message when a complaint is assigned or reassigned to you.",
+    "whatsappNumber": "WhatsApp number",
+    "whatsappNoPhone": "No phone number",
+    "whatsappReceiveAlerts": "Receive WhatsApp alerts",
+    "whatsappReceiveAlertsHint": "Messages come from Help Desk CRM.",
+    "whatsappNoPhoneHint": "Ask an admin to add your phone number before enabling alerts.",
+    "whatsappStopHint": "You can reply STOP at any time to opt out.",
+    "whatsappEnabledStatus": "Enabled",
+    "whatsappDisabledStatus": "Not enabled",
+    "whatsappSaveFailed": "Could not update WhatsApp settings.",
+    "whatsappTurnedOn": "WhatsApp notifications turned on.",
+    "whatsappTurnedOff": "WhatsApp notifications turned off.",
+    "whatsappConsentSaved": "WhatsApp preference updated."
   },
   "pagination": {
     "previous": "Previous",

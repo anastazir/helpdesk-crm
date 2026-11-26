@@ -24,6 +24,25 @@ export interface JobNote {
   created_by: UserMini | null
 }
 
+export type WhatsAppNotificationStatus =
+  | 'queued'
+  | 'sending'
+  | 'sent'
+  | 'delivered'
+  | 'read'
+  | 'failed'
+  | 'skipped'
+
+export interface WhatsAppNotificationSummary {
+  id: number
+  status: WhatsAppNotificationStatus
+  sent_at: string | null
+  delivered_at: string | null
+  read_at: string | null
+  failed_at: string | null
+  last_error: string
+}
+
 export interface Complaint {
   id: number
   reference: string
@@ -53,6 +72,7 @@ export interface Complaint {
   created_by: UserMini | null
   assigned_engineer: UserMini | null
   job_note: JobNote | null
+  whatsapp_notification: WhatsAppNotificationSummary | null
   time_open_seconds: number
   time_in_status_seconds: number
 }

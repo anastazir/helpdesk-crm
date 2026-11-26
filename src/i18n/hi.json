@@ -300,6 +300,16 @@
       "week": "इस सप्ताह",
       "month": "इस महीने",
       "lastMonth": "पिछला महीना"
+    },
+    "whatsappNotification": "WhatsApp सूचना",
+    "whatsappStatus": {
+      "queued": "कतार में",
+      "sending": "भेजा जा रहा है",
+      "sent": "भेजा गया",
+      "delivered": "पहुंचा",
+      "read": "पढ़ा गया",
+      "failed": "विफल",
+      "skipped": "छोड़ा गया"
     }
   },
   "assign": {
@@ -820,7 +830,30 @@
     "aiLogsRemain": "AI ऑडिट लॉग एडमिन के लिए उपलब्ध रहेंगे।",
     "aiSaveFailed": "AI सेटिंग अपडेट नहीं हो सकी।",
     "aiTurnedOn": "AI सुविधाएं चालू हो गईं।",
-    "aiTurnedOff": "AI सुविधाएं बंद हो गईं।"
+    "aiTurnedOff": "AI सुविधाएं बंद हो गईं।",
+    "whatsappIntegration": "WhatsApp एकीकरण",
+    "whatsappOn": "चालू",
+    "whatsappOff": "बंद",
+    "whatsappAdminDescription": "इंजीनियरों के लिए WhatsApp असाइनमेंट सूचनाएं नियंत्रित करें। बंद करने पर इंजीनियर WhatsApp सेटिंग्स छिप जाएंगी और कोई संदेश नहीं भेजा जाएगा।",
+    "whatsappEnableFeature": "WhatsApp सूचनाएं सक्षम करें",
+    "whatsappEnableFeatureHint": "बंद होने पर कोई असाइनमेंट या पुनः असाइनमेंट संदेश नहीं भेजा जाएगा।",
+    "whatsappServerDisabled": "सर्वर स्तर पर WhatsApp बंद है। उपयोग से पहले WHATSAPP_ENABLED और Meta क्रेडेंशियल सेट करें।",
+    "whatsappNotConfigured": "Meta क्रेडेंशियल नहीं हैं। सर्वर पर WHATSAPP_ACCESS_TOKEN और WHATSAPP_PHONE_ID जोड़ें।",
+    "whatsappDisabledHint": "मौजूदा नोटिफिकेशन रिकॉर्ड रहेंगे, लेकिन नए संदेश नहीं भेजे जाएंगे।",
+    "whatsappEngineerTitle": "WhatsApp असाइनमेंट अलर्ट",
+    "whatsappEngineerDescription": "जब कोई शिकायत आपको असाइन या पुनः असाइन की जाए तो WhatsApp संदेश प्राप्त करें।",
+    "whatsappNumber": "WhatsApp नंबर",
+    "whatsappNoPhone": "कोई फ़ोन नंबर नहीं",
+    "whatsappReceiveAlerts": "WhatsApp अलर्ट प्राप्त करें",
+    "whatsappReceiveAlertsHint": "संदेश Help Desk CRM से आते हैं।",
+    "whatsappNoPhoneHint": "अलर्ट सक्षम करने से पहले एडमिन से अपना फ़ोन नंबर जोड़ने को कहें।",
+    "whatsappStopHint": "आप कभी भी ऑप्ट आउट करने के लिए STOP का जवाब दे सकते हैं।",
+    "whatsappEnabledStatus": "सक्षम",
+    "whatsappDisabledStatus": "सक्षम नहीं",
+    "whatsappSaveFailed": "WhatsApp सेटिंग्स अपडेट नहीं हो सकीं।",
+    "whatsappTurnedOn": "WhatsApp सूचनाएं चालू कर दी गईं।",
+    "whatsappTurnedOff": "WhatsApp सूचनाएं बंद कर दी गईं।",
+    "whatsappConsentSaved": "WhatsApp प्राथमिकता अपडेट हो गई।"
   },
   "pagination": {
     "previous": "पिछला",

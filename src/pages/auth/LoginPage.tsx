@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { BarChart3, ClipboardList, Headphones, Users } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -27,8 +27,27 @@ const LoginPage = () => {
   const { t } = useTranslation()
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
   const { isAuthenticated, user, loading, error } = useAuth()
   const accessToken = useAppSelector((state) => state.auth.accessToken)
+  const fromState = (
+    location.state as
+      | {
+          from?: {
+            pathname?: string
+            search?: string
+            hash?: string
+          }
+        }
+      | null
+  )?.from
+  const redirectPath =
+    fromState?.pathname &&
+    fromState.pathname.startsWith('/') &&
+    !fromState.pathname.startsWith('//') &&
+    fromState.pathname !== '/login'
+      ? `${fromState.pathname}${fromState.search ?? ''}${fromState.hash ?? ''}`
+      : null
 
   const schema = useMemo(
     () =>
@@ -49,7 +68,7 @@ const LoginPage = () => {
   })
 
   if (isAuthenticated && user && accessToken) {
-    return <Navigate to={ROLE_HOME[user.role]} replace />
+    return <Navigate to={redirectPath || ROLE_HOME[user.role]} replace />
   }
 
   const submit = async (values: LoginFormValues) => {
@@ -76,7 +95,7 @@ const LoginPage = () => {
       )
       logger.info('[LOGIN] Login successful.', { role: me.data.role })
       toast.success(t('auth.loginSuccess'))
-      navigate(ROLE_HOME[me.data.role], { replace: true })
+      navigate(redirectPath || ROLE_HOME[me.data.role], { replace: true })
     } catch (loginError) {
       logger.error('[LOGIN] Login failed.', loginError)
       const message = getErrorMessage(loginError, t('auth.loginFailed'))

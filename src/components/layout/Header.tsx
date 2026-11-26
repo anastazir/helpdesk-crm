@@ -51,10 +51,14 @@ const Header = () => {
     }
 
     if (path.startsWith('/complaints/')) {
+      const complaintsPath =
+        user?.role === 'engineer' ? '/engineer/complaints' : '/complaints'
       return (
         <>
-          <Link to="/complaints" className="hover:text-foreground">
-            {t('nav.complaints')}
+          <Link to={complaintsPath} className="hover:text-foreground">
+            {user?.role === 'engineer'
+              ? t('nav.myComplaints')
+              : t('nav.complaints')}
           </Link>
           <span className="mx-2 text-slate-400">/</span>
           <span className="font-medium text-foreground">

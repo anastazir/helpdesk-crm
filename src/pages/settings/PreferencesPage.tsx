@@ -8,6 +8,7 @@ import { z } from 'zod'
 
 import RoleBadge from '@/components/common/RoleBadge'
 import AiSettingsCard from '@/components/settings/AiSettingsCard'
+import WhatsAppSettingsCard from '@/components/settings/WhatsAppSettingsCard'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -350,6 +351,7 @@ const PreferencesPage = () => {
       </form>
 
       <AiSettingsCard />
+      <WhatsAppSettingsCard />
 
       <Card className="mt-6 border-border shadow-sm">
         <CardHeader>
