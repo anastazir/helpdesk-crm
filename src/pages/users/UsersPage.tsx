@@ -171,7 +171,6 @@ const CreateUserModal = ({
   }
 
   const roleOptions: { value: UserRole; label: string }[] = [
-    { value: 'admin', label: t('users.admin') },
     { value: 'supervisor', label: t('users.supervisor') },
     { value: 'helpdesk', label: t('users.helpdesk') },
     { value: 'engineer', label: t('users.engineer') },
@@ -1009,8 +1008,10 @@ const UsersPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(data?.results ?? []).map((user) => (
-                  <TableRow key={user.id}>
+                {(data?.results ?? []).map((user) => {
+                  const isAdminUser = user.role === 'admin'
+                  return (
+                    <TableRow key={user.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <UserAvatar id={user.id} fullName={user.full_name} />
@@ -1078,7 +1079,8 @@ const UsersPage = () => {
                       {formatDate(user.created_at)}
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
+                      {!isAdminUser && (
+                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
                             type="button"
@@ -1096,7 +1098,7 @@ const UsersPage = () => {
                           >
                             {t('users.editDetails')}
                           </DropdownMenuItem>
-                          {user.role !== 'admin' && (
+                          {!isAdminUser && (
                             <DropdownMenuItem
                               className="cursor-pointer"
                               onSelect={() => setResetUser(user)}
@@ -1140,9 +1142,11 @@ const UsersPage = () => {
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
+                      )}
                     </TableCell>
                   </TableRow>
-                ))}
+                  )
+                })}
               </TableBody>
             </Table>
           </div>

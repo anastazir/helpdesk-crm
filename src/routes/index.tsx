@@ -45,6 +45,9 @@ const AppRoutes = () => (
 
         <Route element={<RoleRoute allowedRoles={['admin', 'helpdesk']} />}>
           <Route path="/complaints/new" element={<NewComplaintPage />} />
+        </Route>
+
+        <Route element={<RoleRoute allowedRoles={['admin', 'supervisor', 'helpdesk']} />}>
           <Route path="/export" element={<ExportPage />} />
         </Route>
 
